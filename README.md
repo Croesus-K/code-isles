@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-M0（脚手架 / 像素设计系统 / 存档系统）已完成。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
+M0~M3 已完成：像素设计系统、存档系统、世界地图与关卡流程、五种题型与经济闭环（星级/连击/提示商店）、Python 基础全课程（5 区域 20 关 135 题）。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
 
 ## 本地开发
 
