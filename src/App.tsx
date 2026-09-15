@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { pythonBasics } from './content/python-basics'
+import { audio } from './core/audio'
 import { useGameStore } from './core/store'
 import { LevelView } from './ui/LevelView'
 import { PixelButton } from './ui/PixelButton'
 import { PixelPanel } from './ui/PixelPanel'
+import { ProfileView } from './ui/ProfileView'
 import { RegionMap } from './ui/RegionMap'
 import { WorldMap } from './ui/WorldMap'
 import { XpBar } from './ui/XpBar'
@@ -14,14 +16,34 @@ type Scene =
   | { name: 'world' }
   | { name: 'region'; regionIndex: number }
   | { name: 'level'; regionIndex: number; levelIndex: number }
+  | { name: 'profile' }
 
 export default function App() {
-  const { save, hasSave, exportSave, importSave, resetSave } = useGameStore()
+  const {
+    save,
+    hasSave,
+    exportSave,
+    importSave,
+    resetSave,
+    toggleSound,
+    syncBadges,
+  } = useGameStore()
   const [scene, setScene] = useState<Scene>({ name: 'title' })
   const [status, setStatus] = useState('欢迎来到群岛。')
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // 同步 audio 模块与存档中的音效开关。
+  useEffect(() => {
+    audio.setEnabled(save.settings.soundOn)
+  }, [save.settings.soundOn])
+
+  // 进入"档案"场景时自动 reconcile 一次徽章（不强制，但能让旧存档补齐徽章）。
+  useEffect(() => {
+    if (scene.name === 'profile') syncBadges(pythonBasics)
+  }, [scene.name, syncBadges])
+
   const download = () => {
+    audio.play('click')
     const blob = new Blob([exportSave()], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -32,11 +54,18 @@ export default function App() {
   }
 
   const onImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    audio.play('click')
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
     const ok = importSave(await file.text())
     setStatus(ok ? '存档导入成功。' : '导入失败：这不是有效的群岛存档。')
+  }
+
+  const onToggleSound = () => {
+    toggleSound()
+    // 开启时给个轻 click 作"开启音效"反馈；关闭时不响。
+    if (!save.settings.soundOn) audio.play('click')
   }
 
   const saveTools = (
@@ -48,9 +77,13 @@ export default function App() {
         <PixelButton variant="ghost" onClick={() => fileRef.current?.click()}>
           导入存档
         </PixelButton>
+        <PixelButton variant="ghost" onClick={onToggleSound}>
+          音效：{save.settings.soundOn ? '开' : '关'}
+        </PixelButton>
         <PixelButton
           variant="danger"
           onClick={() => {
+            audio.play('click')
             resetSave()
             setStatus('存档已清除。')
           }}
@@ -91,10 +124,27 @@ export default function App() {
       </PixelPanel>
 
       {scene.name === 'world' && (
-        <WorldMap
+        <>
+          <WorldMap
+            course={pythonBasics}
+            save={save}
+            onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
+          />
+          <PixelPanel title="冒险者档案">
+            <div className="row row--center">
+              <PixelButton onClick={() => setScene({ name: 'profile' })}>
+                冒险者徽章
+              </PixelButton>
+            </div>
+          </PixelPanel>
+        </>
+      )}
+
+      {scene.name === 'profile' && (
+        <ProfileView
           course={pythonBasics}
           save={save}
-          onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
+          onBack={() => setScene({ name: 'world' })}
         />
       )}
 
@@ -118,7 +168,9 @@ export default function App() {
       )}
 
       {saveTools}
-      <footer className="footnote">M2 预告：星级评价、连击加成、提示商店与更多题型。</footer>
+      <footer className="footnote">
+        M0~M4：基础架构 + Python 基础课程 + 经济闭环 + 成就系统。完整规划见 docs/product-plan.md
+      </footer>
     </main>
   )
 }

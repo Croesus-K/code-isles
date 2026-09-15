@@ -606,3 +606,275 @@ body {
   letter-spacing: 4px;
   margin: 2px 0 6px;
 }
+
+/* ===== M4：徽章墙 / 结算动效 / 音效开关 ===== */
+
+/* --- 结算面板：从下方以"阶梯感"逐行入场 --- */
+@keyframes resultPanelIn {
+  0% {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.result-panel--in {
+  animation: resultPanelIn 320ms steps(6, end) both;
+}
+
+/* --- 单颗星：弹出+轻微缩放，每颗延迟由 inline style 给出 --- */
+@keyframes starPop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.star-item {
+  display: inline-block;
+  animation: starPop 380ms steps(7, end) both;
+}
+
+.star-item--on {
+  color: var(--c-gold);
+  text-shadow: 0 2px 0 #8a5a00;
+}
+
+.star-item--off {
+  color: #c8b48a;
+}
+
+/* --- 连击徽章：每涨一次重新抖动 --- */
+@keyframes comboShake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(3px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(2px) rotate(2deg);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.combo {
+  display: inline-block;
+  animation: comboShake 280ms steps(5, end) both;
+}
+
+/* --- 结算弹出的"新徽章"块 --- */
+@keyframes badgeUnlockPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.badge-unlock {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(242, 182, 61, 0.15);
+  border: 2px dashed var(--c-gold);
+  text-align: left;
+}
+
+.badge-unlock__title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #6b4400;
+}
+
+.badge-unlock__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.badge-unlock__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-white);
+  border: 2px solid var(--c-ink);
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--c-ink);
+  animation: badgeUnlockPop 420ms steps(7, end) both;
+}
+
+.badge-unlock__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.badge-unlock__name {
+  letter-spacing: 1px;
+}
+
+/* --- 徽章墙（ProfileView） --- */
+.profile-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.profile-summary__cell {
+  background: rgba(35, 35, 58, 0.08);
+  border: 2px solid var(--c-ink);
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.profile-summary__label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #5a4a2a;
+}
+
+.profile-summary__value {
+  font-size: 18px;
+  color: var(--c-ink);
+}
+
+.badge-wall {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.badge-card {
+  background: var(--c-white);
+  border: 3px solid var(--c-ink);
+  padding: 10px 8px 8px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 3px 0 var(--c-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 116px;
+}
+
+.badge-card__icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.badge-card__name {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--c-ink);
+}
+
+.badge-card__desc {
+  font-size: 11px;
+  color: #5a4a2a;
+  line-height: 1.4;
+}
+
+.badge-card__state {
+  margin-top: auto;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 2px 4px;
+  border: 1px solid currentColor;
+  display: inline-block;
+  align-self: center;
+}
+
+.badge-card--earned {
+  background: var(--c-parchment);
+}
+
+.badge-card--earned .badge-card__state {
+  color: #2f6b3b;
+}
+
+.badge-card--locked {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+
+.badge-card--locked .badge-card__icon::before {
+  content: '🔒';
+  margin-right: 2px;
+}
+
+.badge-card--locked .badge-card__icon {
+  font-size: 18px;
+}
+
+.badge-card--locked .badge-card__icon-text {
+  display: none;
+}
+
+.badge-card--earned .badge-card__state {
+  color: #2f6b3b;
+}
+
+.badge-card--earned .badge-card__state::before {
+  content: '✓ ';
+}
+
+/* --- 音效开关 --- */
+.sound-toggle {
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 1px;
+  background: var(--c-sea);
+  color: var(--c-gold-hi);
+  border: 2px solid var(--c-gold);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.sound-toggle--on {
+  background: var(--c-gold);
+  color: var(--c-ink);
+  border-color: var(--c-ink);
+}
+
+/* --- 用户系统级降级：关动画 --- */
+@media (prefers-reduced-motion: reduce) {
+  .result-panel--in,
+  .star-item,
+  .combo,
+  .badge-unlock__item {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

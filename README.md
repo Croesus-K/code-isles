@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-M0~M3 已完成：像素设计系统、存档系统、世界地图与关卡流程、五种题型与经济闭环（星级/连击/提示商店）、Python 基础全课程（5 区域 20 关 135 题）。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
+M0~M4 已完成：像素设计系统、存档系统、世界地图与关卡流程、五种题型与经济闭环（星级/连击/提示商店）、Python 基础全课程（5 区域 20 关 135 题）、成就系统（10 枚徽章 + 结算弹窗 + 徽章墙）、零素材 8-bit 音效（Web Audio 合成）、结算/星级/连击/解锁的像素风动画（尊重 prefers-reduced-motion）。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
 
 ## 本地开发
 
