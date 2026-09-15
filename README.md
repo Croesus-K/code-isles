@@ -1,0 +1,37 @@
+# 代码群岛 Code Isles
+
+像素 RPG 风格的学习平台：扮演冒险者，在世界地图上闯关探险，用打游戏的方式学正经知识。首期课程：Python 基础。
+
+## 当前状态
+
+M0（脚手架 / 像素设计系统 / 存档系统）已完成。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
+
+## 本地开发
+
+```bash
+npm install
+npm run dev      # 开发服务器
+npm test         # 单元测试（Vitest）
+npm run build    # 类型检查 + 生产构建
+```
+
+## 技术栈
+
+- Vite + React 18 + TypeScript，纯静态网页，无后端
+- 状态与存档：Zustand + localStorage（版本化 schema，支持导出/导入 JSON）
+- 测试：Vitest
+- 托管（规划中）：GitHub Pages / Vercel
+
+## 部署
+
+```bash
+npm run build    # 产物在 dist/
+```
+
+构建使用相对路径（Vite `base: './'`），`dist/` 可直接放到任意静态站点的任意子路径，包括博客目录（如 `/games/code-isles/`）。建议作为独立页面部署，而非 iframe 嵌入——iframe 里的本地存档可能受浏览器第三方存储策略限制。
+
+## 素材与授权
+
+- 字体：[Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)（SIL OFL 1.1，可商用）
+- 像素素材：自制 + CC0（来源清单随素材里程碑补充）
+- 代码许可证：待定（当前保留所有权利）

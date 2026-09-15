@@ -1,0 +1,238 @@
+/* ===== 代码群岛 · 像素设计系统（M0） ===== */
+
+:root {
+  --c-sea-deep: #141c2b; /* 深海底色（页面背景） */
+  --c-sea: #1f2d42; /* 海面（面板暗底） */
+  --c-parchment: #f2e3c2; /* 羊皮纸（面板亮底） */
+  --c-ink: #23233a; /* 描边与正文墨色 */
+  --c-gold: #f2b63d;
+  --c-gold-hi: #ffd873;
+  --c-xp: #4fae5c;
+  --c-danger: #c8553d;
+  --c-white: #fdfbf5;
+  --c-shadow: #0b101b;
+  --font-pixel: 'Fusion Pixel 12px Proportional SC', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--c-sea-deep);
+  background-image: linear-gradient(180deg, rgba(38, 58, 92, 0.55), rgba(20, 28, 43, 0) 320px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 8px);
+  color: var(--c-white);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+.screen {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 48px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---- 标题区 ---- */
+
+.title-block {
+  text-align: center;
+}
+
+.game-logo {
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: 10px;
+  text-indent: 10px; /* 抵消末字间距，保持视觉居中 */
+  color: var(--c-gold);
+  text-shadow: 0 4px 0 var(--c-shadow);
+}
+
+.game-tagline {
+  color: #b8c4d8;
+  margin: 8px 0 20px;
+  letter-spacing: 2px;
+  font-size: 14px;
+}
+
+/* ---- 面板 ---- */
+
+.pixel-panel {
+  background: var(--c-parchment);
+  color: var(--c-ink);
+  border: 4px solid var(--c-ink);
+  box-shadow: 0 6px 0 var(--c-shadow);
+  padding: 16px;
+}
+
+.pixel-panel__title {
+  margin: -16px -16px 12px;
+  padding: 8px 12px;
+  background: var(--c-sea);
+  color: var(--c-gold-hi);
+  font-size: 15px;
+  letter-spacing: 2px;
+  border-bottom: 4px solid var(--c-ink);
+}
+
+/* ---- 按钮 ---- */
+
+.pixel-btn {
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 1px;
+  padding: 10px 16px;
+  border: 4px solid var(--c-ink);
+  box-shadow: 0 4px 0 var(--c-shadow);
+  background: var(--c-parchment);
+  color: var(--c-ink);
+  cursor: pointer;
+}
+
+.pixel-btn:hover {
+  background: var(--c-gold-hi);
+}
+
+.pixel-btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+.pixel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pixel-btn:disabled:hover {
+  background: var(--c-parchment);
+}
+
+.pixel-btn--primary {
+  background: var(--c-gold);
+}
+
+.pixel-btn--primary:hover {
+  background: var(--c-gold-hi);
+}
+
+.pixel-btn--ghost {
+  background: transparent;
+  color: inherit;
+}
+
+.pixel-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pixel-btn--danger {
+  background: var(--c-danger);
+  color: var(--c-white);
+}
+
+.pixel-btn--danger:hover {
+  filter: brightness(1.12);
+  background: var(--c-danger);
+}
+
+.pixel-btn--lg {
+  font-size: 18px;
+  padding: 12px 24px;
+}
+
+/* ---- XP 条与状态 ---- */
+
+.xpbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xpbar__level {
+  color: var(--c-ink);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.xpbar__track {
+  flex: 1;
+  height: 18px;
+  background: var(--c-sea);
+  border: 3px solid var(--c-ink);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.xpbar__fill {
+  height: 100%;
+  background: var(--c-xp);
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.22) 0 4px,
+    transparent 4px 10px
+  );
+  transition: width 0.2s steps(6);
+}
+
+.xpbar__text {
+  font-size: 12px;
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+
+.stat-line {
+  color: var(--c-ink);
+}
+
+.stat-line .gold {
+  color: #a06a00;
+}
+
+.panel-divider {
+  border: none;
+  border-top: 3px dashed rgba(35, 35, 58, 0.35);
+  margin: 14px 0;
+}
+
+/* ---- 布局杂项 ---- */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.row--center {
+  justify-content: center;
+}
+
+.status-line {
+  margin: 10px 0 0;
+  color: var(--c-ink);
+  font-size: 13px;
+  background: rgba(35, 35, 58, 0.08);
+  padding: 8px 10px;
+  border-left: 4px solid var(--c-gold);
+}
+
+.footnote {
+  text-align: center;
+  color: #6d7c96;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
