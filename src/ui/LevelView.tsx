@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { LevelDef } from '../content/course'
+import { comboBonus, computeStars, type RewardInfo } from '../core/progress'
 import { useGameStore } from '../core/store'
-import type { RewardInfo } from '../core/progress'
 import { PixelButton } from './PixelButton'
 import { PixelPanel } from './PixelPanel'
 import { QuizQuestion } from './QuizQuestion'
@@ -19,17 +19,39 @@ export function LevelView({ regionId, level, onBack }: Props) {
   const [phase, setPhase] = useState<Phase>('learn')
   const [qIndex, setQIndex] = useState(0)
   const [wrong, setWrong] = useState(0)
-  const [reward, setReward] = useState<RewardInfo | null>(null)
+  const [hints, setHints] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [bonus, setBonus] = useState(0)
+  const [reward, setReward] = useState<(RewardInfo & { stars: number }) | null>(null)
 
   const restart = () => {
     setPhase('learn')
     setQIndex(0)
     setWrong(0)
+    setHints(0)
+    setStreak(0)
+    setBonus(0)
     setReward(null)
   }
 
+  const handleAnswer = (correct: boolean) => {
+    if (correct) {
+      const next = streak + 1
+      setStreak(next)
+      const b = comboBonus(next)
+      if (b > 0) setBonus((v) => v + b)
+    } else {
+      setStreak(0)
+    }
+  }
+
   const finish = () => {
-    setReward(completeLevel(regionId, level.id, { xp: level.xp, gold: level.gold }))
+    const stars = computeStars(wrong, hints)
+    const r = completeLevel(regionId, level.id, { xp: level.xp, gold: level.gold }, {
+      stars,
+      bonusGold: bonus,
+    })
+    setReward(r)
     setPhase('result')
   }
 
@@ -66,9 +88,12 @@ export function LevelView({ regionId, level, onBack }: Props) {
             question={level.questions[qIndex]}
             index={qIndex}
             total={level.questions.length}
+            combo={streak}
             onAnswer={(correct) => {
               if (!correct) setWrong((w) => w + 1)
+              handleAnswer(correct)
             }}
+            onHintUsed={() => setHints((h) => h + 1)}
             onNext={() => {
               if (qIndex + 1 < level.questions.length) setQIndex(qIndex + 1)
               else finish()
@@ -80,14 +105,19 @@ export function LevelView({ regionId, level, onBack }: Props) {
       {phase === 'result' && reward && (
         <PixelPanel title="结算">
           <p className="result-big">{level.boss ? '区域攻破！' : '通关！'}</p>
+          <p className="star-row">
+            {'★'.repeat(reward.stars)}
+            {'☆'.repeat(3 - reward.stars)}
+          </p>
           <p className="result-sub">
-            答对 {level.questions.length - wrong}/{level.questions.length} 题
+            答对 {level.questions.length - wrong}/{level.questions.length} 题 · 用了 {hints} 次提示
           </p>
           <div className="reward-row">
             <span>+{reward.xp} XP</span>
             <span>+{reward.gold} 金币</span>
           </div>
-          {!reward.firstClear && <p className="result-note">复习模式：奖励按 25% 发放。</p>}
+          {bonus > 0 && <p className="result-note">含连击加成 +{bonus} 金币。</p>}
+          {!reward.firstClear && <p className="result-note">复习模式：奖励按 25% 发放。星级只升不降。</p>}
           <div className="row row--center">
             <PixelButton onClick={onBack}>返回区域</PixelButton>
             <PixelButton variant="ghost" onClick={restart}>

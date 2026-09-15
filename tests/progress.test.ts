@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { CourseDef } from '../src/content/course'
 import {
   clearedCount,
+  comboBonus,
   computeReward,
+  computeStars,
   isLevelUnlocked,
   isRegionUnlocked,
   levelCleared,
@@ -79,22 +81,42 @@ describe('奖励计算', () => {
 })
 
 describe('completeLevel 结算', () => {
-  it('首次通关：全额奖励并写入通关记录', () => {
+  it('首次通关：全额奖励（含连击加成）并写入通关记录与星级', () => {
     const s = useGameStore.getState()
     s.resetSave()
-    const reward = s.completeLevel('1', '1-1', { xp: 30, gold: 10 })
-    expect(reward).toEqual({ xp: 30, gold: 10, firstClear: true })
+    const reward = s.completeLevel('1', '1-1', { xp: 30, gold: 10 }, { stars: 2, bonusGold: 4 })
+    expect(reward).toEqual({ xp: 30, gold: 14, firstClear: true, stars: 2 })
     const after = useGameStore.getState().save
-    expect(after.player).toEqual({ xp: 30, gold: 10 })
+    expect(after.player).toEqual({ xp: 30, gold: 14 })
     expect(after.regions['1']!.levels['1-1']!.cleared).toBe(true)
+    expect(after.regions['1']!.levels['1-1']!.stars).toBe(2)
   })
 
-  it('重复通关：25% 奖励', () => {
+  it('重复通关：25% 奖励；星级只升不降', () => {
     const s = useGameStore.getState()
-    const reward = s.completeLevel('1', '1-1', { xp: 30, gold: 10 })
-    expect(reward).toEqual({ xp: 7, gold: 2, firstClear: false })
-    expect(useGameStore.getState().save.player).toEqual({ xp: 37, gold: 12 })
+    const reward = s.completeLevel('1', '1-1', { xp: 30, gold: 10 }, { stars: 3, bonusGold: 0 })
+    expect(reward).toEqual({ xp: 7, gold: 2, firstClear: false, stars: 3 })
+    expect(useGameStore.getState().save.player).toEqual({ xp: 37, gold: 16 })
+    expect(useGameStore.getState().save.regions['1']!.levels['1-1']!.stars).toBe(3)
     useGameStore.getState().resetSave()
+  })
+})
+
+describe('星级与连击规则', () => {
+  it('computeStars：全对零提示 3 星，错2提示1内 2 星，其余 1 星', () => {
+    expect(computeStars(0, 0)).toBe(3)
+    expect(computeStars(2, 1)).toBe(2)
+    expect(computeStars(1, 2)).toBe(1)
+    expect(computeStars(3, 0)).toBe(1)
+  })
+
+  it('comboBonus：第 2 连击起每题 +2，封顶 +10', () => {
+    expect(comboBonus(0)).toBe(0)
+    expect(comboBonus(1)).toBe(0)
+    expect(comboBonus(2)).toBe(2)
+    expect(comboBonus(5)).toBe(8)
+    expect(comboBonus(6)).toBe(10)
+    expect(comboBonus(9)).toBe(10)
   })
 })
 

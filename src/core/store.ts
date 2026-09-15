@@ -9,6 +9,7 @@ import {
   spendGold,
   type PlayerState,
   type SaveData,
+  type Stars,
 } from './save/schema'
 import { clearSaved, loadSave, persistSave } from './save/storage'
 
@@ -23,12 +24,13 @@ interface GameStore {
   addGold: (amount: number) => void
   /** 花金币；余额不足返回 false */
   spend: (amount: number) => boolean
-  /** 通关结算：首次全额奖励，重复通关按 25%（复习奖励） */
+  /** 通关结算：首次全额奖励，重复通关按 25%（复习奖励）；星级只升不降 */
   completeLevel: (
     regionId: string,
     levelId: string,
     base: { xp: number; gold: number },
-  ) => RewardInfo
+    result: { stars: Stars; bonusGold: number },
+  ) => RewardInfo & { stars: Stars }
   exportSave: () => string
   /** 导入成功返回 true；坏 JSON 或版本不符返回 false */
   importSave: (raw: string) => boolean
@@ -57,11 +59,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
       withPlayer((p) => grantGold(p, amount))
     },
     spend: (amount) => withPlayer((p) => spendGold(p, amount)),
-    completeLevel: (regionId, levelId, base) => {
+    completeLevel: (regionId, levelId, base, result) => {
       const cur = get().save
       const region = cur.regions[regionId] ?? { unlocked: true, levels: {} }
       const already = region.levels[levelId]?.cleared ?? false
-      const reward = computeReward(already, base)
+      const reward = computeReward(already, { xp: base.xp, gold: base.gold + result.bonusGold })
+      const prevStars = region.levels[levelId]?.stars ?? 0
+      const stars = Math.max(prevStars, result.stars) as Stars
       const next: SaveData = {
         ...cur,
         regions: {
@@ -69,13 +73,13 @@ export const useGameStore = create<GameStore>()((set, get) => {
           [regionId]: {
             ...region,
             unlocked: true,
-            levels: { ...region.levels, [levelId]: { cleared: true, stars: 0 } },
+            levels: { ...region.levels, [levelId]: { cleared: true, stars } },
           },
         },
         player: grantXp(grantGold(cur.player, reward.gold), reward.xp),
       }
       commit(next)
-      return reward
+      return { ...reward, stars }
     },
     exportSave: () => serializeSave(get().save),
     importSave: (raw) => {

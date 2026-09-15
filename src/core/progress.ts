@@ -3,7 +3,7 @@
  * 谁解锁谁锁定都从这里算出来——避免存档与规则不同步。
  */
 import type { CourseDef, RegionDef } from '../content/course'
-import type { SaveData } from './save/schema'
+import type { SaveData, Stars } from './save/schema'
 
 /** 区域是否可进入：区域 1 永远解锁；之后要求上一区域的 Boss 关已通关 */
 export function isRegionUnlocked(save: SaveData, course: CourseDef, regionIndex: number): boolean {
@@ -48,4 +48,20 @@ export function computeReward(
     gold: Math.floor(base.gold * 0.25),
     firstClear: false,
   }
+}
+
+/** 买一条提示的金价 */
+export const HINT_COST = 5
+
+/** 连击加成：第 2 连击起每题 +2 金币，封顶每题 +10 */
+export function comboBonus(streak: number): number {
+  if (streak < 2) return 0
+  return Math.min((streak - 1) * 2, 10)
+}
+
+/** 星级：全对且零提示=3星；错≤2 且提示≤1=2星；其余=1星（通关保底） */
+export function computeStars(wrongCount: number, hintsUsed: number): Stars {
+  if (wrongCount === 0 && hintsUsed === 0) return 3
+  if (wrongCount <= 2 && hintsUsed <= 1) return 2
+  return 1
 }

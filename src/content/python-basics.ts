@@ -2,7 +2,7 @@ import type { CourseDef } from './course'
 
 /**
  * 首期课程：Python 基础。
- * 区域 1「变量平原」内容完整（3 关 + Boss）；区域 2-5 为后续版本预告位。
+ * 区域 1「变量平原」内容完整（3 关 + Boss，五种题型混编）；区域 2-5 为后续版本预告位。
  */
 export const pythonBasics: CourseDef = {
   id: 'python-basics',
@@ -34,6 +34,7 @@ export const pythonBasics: CourseDef = {
               prompt: '下列哪一个是合法的变量名？',
               options: ['2nd_place', 'my_gold', 'my-gold', 'class'],
               answerIndex: 1,
+              hint: '变量名里只能有字母、数字、下划线三种字符；还要避开一份叫「关键字」的保留名单。',
               explain: '变量名不能以数字开头（2nd_place ✗），不能含连字符（my-gold ✗，会被当成减法），class 是 Python 保留关键字（✗）；my_gold 完全合法。',
             },
             {
@@ -42,6 +43,7 @@ export const pythonBasics: CourseDef = {
               code: 'hp = 100\nHp\n# 顺便一提：直接写一个变量名，就会输出它的值',
               options: ['输出 100', '报错：Hp 未定义', '输出 0', '输出 None'],
               answerIndex: 1,
+              hint: '变量名大小写不同，就是两个不同的变量。',
               explain: '变量名区分大小写，hp 和 Hp 是两个不同的变量。只赋值过 hp，访问 Hp 会触发 NameError（未定义）。',
             },
             {
@@ -50,6 +52,7 @@ export const pythonBasics: CourseDef = {
               code: 'gold = 50\ngold = gold + 10',
               options: ['50', '10', '60', '报错'],
               answerIndex: 2,
+              hint: '等号右边先算完，再放进左边的变量。',
               explain: '右边先算出 gold + 10 = 60，再放回变量 gold。变量可以随时被新值覆盖，这是「更新」变量的标准写法。',
             },
             {
@@ -58,6 +61,7 @@ export const pythonBasics: CourseDef = {
               code: 'a = 3\nb = a\na = 7',
               options: ['7', '3', '10', '报错'],
               answerIndex: 1,
+              hint: 'b 拿到的是「当时」的值，之后 a 的变化不会追溯。',
               explain: 'b = a 是把 a「当时」的值 3 交给 b；之后 a 改成 7，与 b 已经无关。',
             },
             {
@@ -65,6 +69,7 @@ export const pythonBasics: CourseDef = {
               prompt: '先执行 x = 5，再执行 x = "五"，结果是？',
               options: ['报错：类型不能变', 'x 变成字符串「五」，完全合法', 'x 变成「55」', 'x 仍是 5'],
               answerIndex: 1,
+              hint: 'Python 对变量不设类型门禁，最后一次赋值说了算。',
               explain: 'Python 的变量没有固定类型，重新赋值为另一种类型完全允许；x 只保留最后一次放进去的值。',
             },
           ],
@@ -89,6 +94,7 @@ export const pythonBasics: CourseDef = {
               prompt: '7 // 2 的结果是？',
               options: ['3.5', '3', '4', '1'],
               answerIndex: 1,
+              hint: '// 会把小数部分整个丢掉。',
               explain: '// 是整除（向下取整）：7 除以 2 商 3 余 1，// 给出商 3，丢掉余数。',
             },
             {
@@ -96,6 +102,7 @@ export const pythonBasics: CourseDef = {
               prompt: '7 % 2 的结果是？',
               options: ['3', '3.5', '1', '0'],
               answerIndex: 2,
+              hint: '想想余数：7 = 2 × 几 + 几？',
               explain: '% 取余数：7 = 2×3 + 1，余 1。判断奇偶的经典写法：n % 2 为 0 就是偶数。',
             },
             {
@@ -103,6 +110,7 @@ export const pythonBasics: CourseDef = {
               prompt: '2 ** 3 的结果是？',
               options: ['6', '8', '9', '5'],
               answerIndex: 1,
+              hint: '** 不是乘法，是「几次方」。',
               explain: '** 是乘方：2**3 = 2×2×2 = 8。别和乘法 2×3=6 弄混。',
             },
             {
@@ -110,6 +118,7 @@ export const pythonBasics: CourseDef = {
               prompt: '10 / 5 的值和类型是？',
               options: ['整数 2', '小数 2.0', '报错', '字符串「2」'],
               answerIndex: 1,
+              hint: '/ 从来不给整数结果。',
               explain: '只要用了 /，结果一律是小数（float）：10 / 5 得 2.0 而不是 2。想要整数商请用 //。',
             },
             {
@@ -117,7 +126,15 @@ export const pythonBasics: CourseDef = {
               prompt: '3 + 2 * 2 的结果是？',
               options: ['10', '7', '12', '5'],
               answerIndex: 1,
+              hint: '先乘除，后加减。',
               explain: '先乘除后加减：2×2=4，3+4=7。想先算加法要加括号：(3+2)*2 得 10。',
+            },
+            {
+              kind: 'order',
+              prompt: '把这三行排成能顺利执行的顺序（后一行要用到前面的变量）：',
+              lines: ['gold = 50', 'gold = gold + 10', 'hp = gold - 30'],
+              hint: '用到谁，谁就要先出现。',
+              explain: '程序从上往下一行行执行：先有 gold，再更新 gold，最后才轮到用 gold 算 hp。变量必须先赋值再使用。',
             },
           ],
         },
@@ -141,6 +158,7 @@ export const pythonBasics: CourseDef = {
               prompt: '"火" + "把" 的结果是？',
               options: ['「火把」', '「火 把」', '报错', '「火+把」'],
               answerIndex: 0,
+              hint: '字符串的加法不会自动补空格。',
               explain: '字符串的 + 是拼接：两段文字首尾相连，中间不会自动加空格。',
             },
             {
@@ -148,6 +166,7 @@ export const pythonBasics: CourseDef = {
               prompt: '"哈" * 3 的结果是？',
               options: ['「哈哈」', '「哈哈哈」', '「哈3」', '报错'],
               answerIndex: 1,
+              hint: '字符串 × 整数 = 复读机。',
               explain: '字符串 * 整数 = 重复三遍，得「哈哈哈」。字符串不能乘字符串，也不能乘小数。',
             },
             {
@@ -155,6 +174,7 @@ export const pythonBasics: CourseDef = {
               prompt: 'len("code") 的结果是？',
               options: ['3', '4', '5', '报错'],
               answerIndex: 1,
+              hint: '一个一个字符数。',
               explain: 'len() 返回字符个数：c-o-d-e 共 4 个字符。',
             },
             {
@@ -163,15 +183,26 @@ export const pythonBasics: CourseDef = {
               code: 'name = "月"\nf"你好{name}"',
               options: ['「你好name」', '「你好月」', '报错', '「你好{name}」'],
               answerIndex: 1,
+              hint: '注意字符串最前面那个字母 f。',
               explain: 'f-string 会把 {} 里的变量名换成它的值，得「你好月」。漏写 f 前缀就不会替换，原样输出。',
             },
             {
-              kind: 'choice',
-              prompt: '执行这段会发生什么？',
+              kind: 'output',
+              prompt: '这段代码运行后输出什么？',
               code: 'age = 12\n"我" + age',
               options: ['「我12」', '「我age」', '报错：文字不能加数字', '「我 12」'],
               answerIndex: 2,
+              hint: '文字和数字是两种类型，加号不认识它们站在一起。',
               explain: '字符串只能拼接字符串。想得到「我12」要写 str(age) 或 f"我{age}"——这是新手最常见的报错之一。',
+            },
+            {
+              kind: 'fill',
+              prompt: '补全代码，让它数出 "code" 的字符个数（填一个函数名）：',
+              code: '___("code")   # → 4',
+              answers: ['len'],
+              placeholder: '三个字母的函数名',
+              hint: '以字母 l 开头，意为 length（长度）。',
+              explain: 'len() 是最常用的内建函数之一，返回字符串（以后还有列表）的长度。',
             },
           ],
         },
@@ -184,8 +215,8 @@ export const pythonBasics: CourseDef = {
           learn: {
             title: 'Boss 来了：平原全线复习',
             body: [
-              '这一关没有新知识，8 道题覆盖前面三关——答错会当场给解析，放心冲。',
-              '全对才能拿到完整的 Boss 战利品。整理行囊，出发！',
+              '这一关没有新知识，9 道题覆盖前面三关，五种题型轮番上阵——答错会当场给解析，放心冲。',
+              '全对零提示才能拿到 ★★★ 和完整战利品。整理行囊，出发！',
             ],
           },
           questions: [
@@ -195,6 +226,7 @@ export const pythonBasics: CourseDef = {
               code: 'hp = 100\nhp = hp - 30',
               options: ['70', '100', '-30', '报错'],
               answerIndex: 0,
+              hint: '先算右边，再存回去。',
               explain: '先算右边 100 - 30 = 70，再存回 hp。这就是变量的「更新」。',
             },
             {
@@ -202,6 +234,7 @@ export const pythonBasics: CourseDef = {
               prompt: '下列哪一个是合法的变量名？',
               options: ['for', '_hp', '2d', 'my-hp'],
               answerIndex: 1,
+              hint: '关键字名单、数字开头、连字符——逐一排除。',
               explain: 'for 是保留关键字；2d 以数字开头；my-hp 含连字符；下划线开头的 _hp 合法（习惯上表示"内部使用"）。',
             },
             {
@@ -209,28 +242,39 @@ export const pythonBasics: CourseDef = {
               prompt: '9 // 4 + 9 % 4 的结果是？',
               options: ['3', '4', '2.25', '13'],
               answerIndex: 0,
+              hint: '整除和取余各算各的，再相加。',
               explain: '9//4=2（商），9%4=1（余），2+1=3。整除和取余是一对搭档：商×除数+余数=被除数。',
             },
             {
-              kind: 'choice',
-              prompt: '"3" + "4" 的结果是？',
+              kind: 'output',
+              prompt: '这段代码运行后输出什么？',
+              code: '"3" + "4"',
               options: ['7（数字相加）', '「34」（文字拼接）', '报错', '「7」'],
               answerIndex: 1,
+              hint: '带引号的是文字，不是数字。',
               explain: '带引号的是字符串，+ 表示拼接，得「34」。想算 7 要写 3 + 4（不带引号）。',
             },
             {
-              kind: 'choice',
-              prompt: '执行这段会发生什么？',
-              code: 'x = "5"\nx + 1',
-              options: ['6', '「51」', '报错：str 和 int 不能相加', '「5 1」'],
-              answerIndex: 2,
-              explain: 'x 里装的是文字「5」不是数字 5，文字 + 数字直接报错。想算数要先转换：int(x) + 1。',
+              kind: 'order',
+              prompt: '把这三行排成能顺利执行的顺序：',
+              lines: ['gold = 99', 'title = f"金币:{gold}"', 'len(title)'],
+              hint: 'f-string 里的 {gold}，得先有 gold 才行。',
+              explain: '先准备变量，再把它嵌进 f-string，最后才能对结果取长度。顺序错了就会 NameError。',
+            },
+            {
+              kind: 'bug',
+              prompt: '下面三行里，哪一行会报错？',
+              code: ['name = "月"', 'age = 12', 'msg = name + age'],
+              answerLine: 2,
+              hint: '想想文字能不能直接加数字。',
+              explain: '第 3 行把字符串和整数相加，触发 TypeError。想拼出「月12」要写 name + str(age)。',
             },
             {
               kind: 'choice',
               prompt: 'len("像素岛") 的结果是？',
               options: ['2', '3', '6', '9'],
               answerIndex: 1,
+              hint: '一个汉字就是一个字符。',
               explain: 'len 数的是字符个数，每个汉字算 1 个字符，共 3 个。',
             },
             {
@@ -239,14 +283,16 @@ export const pythonBasics: CourseDef = {
               code: 'score = 10\nscore = score * 2 + 4',
               options: ['24', '28', '48', '44'],
               answerIndex: 0,
+              hint: '乘法优先。',
               explain: '先乘后加：10×2+4=24。运算优先级在赋值右边照样生效。',
             },
             {
-              kind: 'choice',
+              kind: 'output',
               prompt: '执行后得到什么？',
               code: 'gold = 99\nf"金币:{gold}"',
               options: ['「金币:{gold}」', '「金币:99」', '报错', '「金币:gold」'],
               answerIndex: 1,
+              hint: 'f-string 会替换大括号里的东西。',
               explain: 'f-string 把 {gold} 替换成变量的值 99。Boss 战顺利，平原已在脚下！',
             },
           ],

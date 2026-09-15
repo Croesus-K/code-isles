@@ -476,3 +476,133 @@ body {
   text-align: center;
   margin: 0 0 10px;
 }
+
+/* ===== M2：题型标签 / 连击 / 提示 / 填空 / 排序 / 找错 / 星级 ===== */
+
+.kind-tag {
+  display: inline-block;
+  border: 2px solid var(--c-ink);
+  background: var(--c-gold);
+  color: var(--c-ink);
+  padding: 0 6px;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.combo {
+  margin-left: 10px;
+  color: var(--c-danger);
+  letter-spacing: 1px;
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.hint-error {
+  font-size: 12px;
+  color: var(--c-danger);
+}
+
+.hint-box {
+  background: rgba(242, 182, 61, 0.18);
+  border: 3px dashed var(--c-gold);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--c-ink);
+  margin-top: 10px;
+}
+
+.fill-input {
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  color: var(--c-ink);
+  background: var(--c-white);
+  border: 3px solid var(--c-ink);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.12);
+  padding: 8px 10px;
+  width: 100%;
+  margin: 4px 0 10px;
+}
+
+.fill-input:focus {
+  outline: 3px solid var(--c-gold);
+  outline-offset: 0;
+}
+
+.order-label {
+  font-size: 12px;
+  color: var(--c-ink);
+  opacity: 0.7;
+  margin: 8px 0 4px;
+}
+
+.order-seq {
+  min-height: 20px;
+  margin-bottom: 4px;
+}
+
+.order-empty {
+  font-size: 12px;
+  color: var(--c-ink);
+  opacity: 0.5;
+  margin: 0;
+}
+
+.pixel-btn.seq-line {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  text-align: left;
+  margin: 6px 0;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.seq-line--placed {
+  background: var(--c-gold-hi);
+}
+
+.pixel-btn.bug-line {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  margin: 6px 0;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.bug-line__no {
+  border: 2px solid currentColor;
+  padding: 0 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.bug-line__text {
+  font-family: var(--font-pixel);
+}
+
+.bug-line--bad {
+  background: var(--c-danger);
+  color: var(--c-white);
+}
+
+.bug-line--dim {
+  opacity: 0.45;
+}
+
+.star-row {
+  font-size: 26px;
+  text-align: center;
+  color: #a06a00;
+  letter-spacing: 4px;
+  margin: 2px 0 6px;
+}

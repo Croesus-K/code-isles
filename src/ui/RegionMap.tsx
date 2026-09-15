@@ -26,6 +26,7 @@ export function RegionMap({ region, save, onBack, onEnterLevel }: Props) {
           {region.levels.map((level, i) => {
             const unlocked = isLevelUnlocked(save, region, i)
             const cleared = levelCleared(save, region.id, level.id)
+            const stars = save.regions[region.id]?.levels[level.id]?.stars ?? 0
             return (
               <div className="node-row" key={level.id}>
                 <PixelButton
@@ -46,7 +47,9 @@ export function RegionMap({ region, save, onBack, onEnterLevel }: Props) {
                         : '通过上一关后解锁'}
                     </span>
                   </span>
-                  <span className="stars">{cleared ? '☆☆☆' : ''}</span>
+                  <span className="stars">
+                    {cleared ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : ''}
+                  </span>
                 </PixelButton>
               </div>
             )
