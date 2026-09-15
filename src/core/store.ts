@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { computeReward, type RewardInfo } from './progress'
 import {
   defaultSave,
   grantGold,
@@ -22,6 +23,12 @@ interface GameStore {
   addGold: (amount: number) => void
   /** 花金币；余额不足返回 false */
   spend: (amount: number) => boolean
+  /** 通关结算：首次全额奖励，重复通关按 25%（复习奖励） */
+  completeLevel: (
+    regionId: string,
+    levelId: string,
+    base: { xp: number; gold: number },
+  ) => RewardInfo
   exportSave: () => string
   /** 导入成功返回 true；坏 JSON 或版本不符返回 false */
   importSave: (raw: string) => boolean
@@ -50,6 +57,26 @@ export const useGameStore = create<GameStore>()((set, get) => {
       withPlayer((p) => grantGold(p, amount))
     },
     spend: (amount) => withPlayer((p) => spendGold(p, amount)),
+    completeLevel: (regionId, levelId, base) => {
+      const cur = get().save
+      const region = cur.regions[regionId] ?? { unlocked: true, levels: {} }
+      const already = region.levels[levelId]?.cleared ?? false
+      const reward = computeReward(already, base)
+      const next: SaveData = {
+        ...cur,
+        regions: {
+          ...cur.regions,
+          [regionId]: {
+            ...region,
+            unlocked: true,
+            levels: { ...region.levels, [levelId]: { cleared: true, stars: 0 } },
+          },
+        },
+        player: grantXp(grantGold(cur.player, reward.gold), reward.xp),
+      }
+      commit(next)
+      return reward
+    },
     exportSave: () => serializeSave(get().save),
     importSave: (raw) => {
       const next = parseSave(raw)

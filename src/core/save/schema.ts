@@ -30,7 +30,7 @@ export interface Settings {
 export interface SaveData {
   version: number
   player: PlayerState
-  /** key = 区域 id，如 "1"。区域/关卡明细在 M1 接入地图时再深度校验。 */
+  /** key = 区域 id，如 "1"。结构经 validateSave 深度校验 */
   regions: Record<string, RegionProgress>
   /** 已获得徽章的 id 列表 */
   badges: string[]
@@ -53,7 +53,33 @@ function isNonNegativeInt(v: unknown): v is number {
   return typeof v === 'number' && Number.isInteger(v) && v >= 0
 }
 
-/** 校验并规整存档对象；不合法返回 null。M0 只接受当前版本，迁移器以后按 version 逐级加。 */
+function validateStars(v: unknown): v is Stars {
+  return v === 0 || v === 1 || v === 2 || v === 3
+}
+
+function validateLevelProgress(v: unknown): LevelProgress | null {
+  if (typeof v !== 'object' || v === null) return null
+  const l = v as Record<string, unknown>
+  if (typeof l.cleared !== 'boolean' || !validateStars(l.stars)) return null
+  return { cleared: l.cleared, stars: l.stars }
+}
+
+function validateRegionProgress(v: unknown): RegionProgress | null {
+  if (typeof v !== 'object' || v === null) return null
+  const r = v as Record<string, unknown>
+  if (typeof r.unlocked !== 'boolean' || typeof r.levels !== 'object' || r.levels === null) {
+    return null
+  }
+  const levels: Record<string, LevelProgress> = {}
+  for (const [key, val] of Object.entries(r.levels)) {
+    const lp = validateLevelProgress(val)
+    if (!lp) return null
+    levels[key] = lp
+  }
+  return { unlocked: r.unlocked, levels }
+}
+
+/** 校验并规整存档对象；不合法返回 null。只接受当前版本，迁移器以后按 version 逐级加。 */
 export function validateSave(data: unknown): SaveData | null {
   if (typeof data !== 'object' || data === null) return null
   const d = data as Record<string, unknown>
@@ -64,10 +90,16 @@ export function validateSave(data: unknown): SaveData | null {
   if (!settings || typeof settings.soundOn !== 'boolean') return null
   if (typeof d.regions !== 'object' || d.regions === null) return null
   if (!Array.isArray(d.badges) || !d.badges.every((b) => typeof b === 'string')) return null
+  const regions: Record<string, RegionProgress> = {}
+  for (const [key, val] of Object.entries(d.regions)) {
+    const rp = validateRegionProgress(val)
+    if (!rp) return null
+    regions[key] = rp
+  }
   return {
     version: SAVE_VERSION,
     player: { xp: player.xp, gold: player.gold },
-    regions: d.regions as Record<string, RegionProgress>,
+    regions,
     badges: d.badges as string[],
     settings: { soundOn: settings.soundOn },
     updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
