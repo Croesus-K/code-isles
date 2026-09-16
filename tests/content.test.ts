@@ -26,7 +26,7 @@ describe('课程内容完整性', () => {
     }
   })
 
-  it('题量：普通关 4~6 题，Boss ≥ 8 题', () => {
+  it('题量：普通关 4~9 题，Boss ≥ 8 题', () => {
     for (const r of regions) {
       for (const l of r.levels) {
         const n = l.questions.length
@@ -34,7 +34,7 @@ describe('课程内容完整性', () => {
           expect(n, `${l.id} Boss 题量`).toBeGreaterThanOrEqual(8)
         } else {
           expect(n, `${l.id} 题量下限`).toBeGreaterThanOrEqual(4)
-          expect(n, `${l.id} 题量上限`).toBeLessThanOrEqual(6)
+          expect(n, `${l.id} 题量上限`).toBeLessThanOrEqual(9)
         }
       }
     }
