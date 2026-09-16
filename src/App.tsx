@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 import { pythonBasics } from './content/python-basics'
 import { audio } from './core/audio'
 import { useGameStore } from './core/store'
+import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
 import { PixelButton } from './ui/PixelButton'
 import { PixelPanel } from './ui/PixelPanel'
@@ -30,6 +31,7 @@ export default function App() {
   } = useGameStore()
   const [scene, setScene] = useState<Scene>({ name: 'title' })
   const [status, setStatus] = useState('欢迎来到群岛。')
+  const [showDonate, setShowDonate] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   // 同步 audio 模块与存档中的音效开关。
@@ -80,6 +82,9 @@ export default function App() {
         <PixelButton variant="ghost" onClick={onToggleSound}>
           音效：{save.settings.soundOn ? '开' : '关'}
         </PixelButton>
+        <PixelButton variant="ghost" onClick={() => setShowDonate(true)}>
+          打赏作者
+        </PixelButton>
         <PixelButton
           variant="danger"
           onClick={() => {
@@ -110,6 +115,7 @@ export default function App() {
           {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
         </header>
         {saveTools}
+        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
       </main>
     )
   }
@@ -169,8 +175,9 @@ export default function App() {
 
       {saveTools}
       <footer className="footnote">
-        M0~M4：基础架构 + Python 基础课程 + 经济闭环 + 成就系统。完整规划见 docs/product-plan.md
+        M0~M5：基础架构 + Python 基础课程 + 经济闭环 + 成就系统 + 打赏入口。完整规划见 docs/product-plan.md
       </footer>
+      <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
     </main>
   )
 }

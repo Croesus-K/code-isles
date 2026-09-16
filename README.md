@@ -4,7 +4,17 @@
 
 ## 当前状态
 
-M0~M4 已完成：像素设计系统、存档系统、世界地图与关卡流程、五种题型与经济闭环（星级/连击/提示商店）、Python 基础全课程（5 区域 20 关 135 题）、成就系统（10 枚徽章 + 结算弹窗 + 徽章墙）、零素材 8-bit 音效（Web Audio 合成）、结算/星级/连击/解锁的像素风动画（尊重 prefers-reduced-motion）。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
+M0~M5 已完成：像素设计系统、存档系统、世界地图与关卡流程、五种题型与经济闭环（星级/连击/提示商店）、Python 基础全课程（5 区域 20 关 135 题）、成就系统（10 枚徽章 + 结算弹窗 + 徽章墙）、零素材 8-bit 音效（Web Audio 合成）、结算/星级/连击/解锁的像素风动画（尊重 prefers-reduced-motion）、打赏入口（游戏内弹窗，支付宝收款码运行时加载）、部署上线（博客 Cloudflare Pages 静态托管）。里程碑规划见 [docs/product-plan.md](docs/product-plan.md)。
+
+## 在线试玩
+
+已部署至作者博客（Cloudflare Pages 静态托管）：<https://croesus-k.top/games/code-isles/>
+
+## 赞助
+
+如果代码群岛帮到了你，欢迎请冒险者喝杯朗姆酒🍹——游戏内「工具箱 → 打赏作者」可扫码打赏（支付宝收款码，金额随意）。
+
+收款码以相对路径运行时加载（不打包进 JS），替换时只需更新发布目录里的 `donate/alipay.png` 并重新部署，无需重新构建。
 
 ## 本地开发
 

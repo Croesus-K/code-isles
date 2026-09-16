@@ -878,3 +878,93 @@ body {
     opacity: 1 !important;
   }
 }
+
+/* --- 打赏弹窗 --- */
+.donate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(11, 16, 27, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  /* 轻入场：避免突兀；尊重 prefers-reduced-motion 由下方媒体查询兜底 */
+  animation: donate-fade 0.16s ease-out;
+}
+
+@keyframes donate-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.donate-card {
+  background: var(--c-parchment);
+  color: var(--c-ink);
+  border: 4px solid var(--c-ink);
+  box-shadow: 0 8px 0 var(--c-shadow);
+  padding: 18px 18px 16px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+}
+
+.donate-card__title {
+  background: var(--c-sea);
+  color: var(--c-gold-hi);
+  margin: -18px -18px 14px;
+  padding: 8px 12px;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+
+.donate-qr {
+  margin: 0 auto 14px;
+  width: 220px;
+  height: 220px;
+  background: var(--c-white);
+  border: 3px solid var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 像素 QR 保持锐利 */
+  image-rendering: pixelated;
+}
+
+.donate-qr__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 收款码未就位时的占位卡（onError 回退） */
+.donate-qr__placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--c-sea);
+  font-size: 18px;
+  letter-spacing: 4px;
+}
+
+.donate-qr__placeholder-line {
+  text-indent: 4px; /* 抵消末字间距，视觉居中 */
+}
+
+.donate-note {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #4a4030;
+  margin: 0 0 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donate-overlay {
+    animation: none !important;
+  }
+}
