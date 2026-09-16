@@ -14,13 +14,17 @@ import { clearSaved, loadSave, persistSave } from '../src/core/save/storage'
 
 class MemoryStorage {
   private map = new Map<string, string>()
+  /** 测试钩子：true 时 setItem 抛错（模拟 Safari 隐私模式 / quota 满）。 */
+  public throwOnWrite = false
   getItem(k: string) {
     return this.map.has(k) ? this.map.get(k)! : null
   }
   setItem(k: string, v: string) {
+    if (this.throwOnWrite) throw new Error('QuotaExceededError')
     this.map.set(k, String(v))
   }
   removeItem(k: string) {
+    if (this.throwOnWrite) throw new Error('QuotaExceededError')
     this.map.delete(k)
   }
   clear() {
@@ -100,16 +104,35 @@ describe('升级曲线', () => {
 describe('localStorage 封装', () => {
   it('存取与清除', () => {
     const storage = new MemoryStorage() as unknown as Storage
-    expect(loadSave(storage)).toBeNull()
+    expect(loadSave(storage).save).toBeNull()
     persistSave(storage, defaultSave())
-    expect(loadSave(storage)).not.toBeNull()
+    expect(loadSave(storage).save).not.toBeNull()
     clearSaved(storage)
-    expect(loadSave(storage)).toBeNull()
+    expect(loadSave(storage).save).toBeNull()
   })
 
-  it('损坏的存档当作不存在', () => {
+  it('损坏的存档被自动清除，并标记 corrupt=true', () => {
     const storage = new MemoryStorage() as unknown as Storage
     storage.setItem(SAVE_KEY, '{oops')
-    expect(loadSave(storage)).toBeNull()
+    const result = loadSave(storage)
+    expect(result.save).toBeNull()
+    expect(result.corrupt).toBe(true)
+    // 主动清除已发生——下次再 load 不再算 corrupt（已无数据可读）
+    const after = loadSave(storage)
+    expect(after.save).toBeNull()
+    expect(after.corrupt).toBe(false)
+  })
+
+  it('正常存档的 corrupt 标记为 false', () => {
+    const storage = new MemoryStorage() as unknown as Storage
+    persistSave(storage, defaultSave())
+    expect(loadSave(storage).corrupt).toBe(false)
+  })
+
+  it('persistSave 写入失败时返回 false，clearSaved 同样安全', () => {
+    const broken = new MemoryStorage() as unknown as Storage
+    broken.throwOnWrite = true
+    expect(persistSave(broken, defaultSave())).toBe(false)
+    expect(clearSaved(broken)).toBe(false)
   })
 })

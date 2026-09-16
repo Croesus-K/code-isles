@@ -962,3 +962,27 @@ body {
     animation: none !important;
   }
 }
+
+/* --- 存档损坏提示横幅 --- */
+.corrupt-notice .pixel-panel__title {
+  background: var(--c-danger);
+  color: var(--c-white);
+}
+
+.corrupt-notice__text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 0 0 12px;
+}
+
+/* --- 持久化失败警告（隐私模式 / quota 满）--- */
+.persist-warning {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--c-danger);
+  background: rgba(200, 85, 61, 0.08);
+  border-left: 3px solid var(--c-danger);
+  padding: 6px 10px;
+  margin: 8px 0 0;
+}

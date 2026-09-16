@@ -23,6 +23,9 @@ export default function App() {
   const {
     save,
     hasSave,
+    corruptDetected,
+    persistFailed,
+    dismissCorruptNotice,
     exportSave,
     importSave,
     resetSave,
@@ -98,8 +101,25 @@ export default function App() {
       </div>
       <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
       <p className="status-line">{status}</p>
+      {persistFailed && (
+        <p className="persist-warning" role="status">
+          ⚠ 进度无法写入浏览器（隐私模式或存储已满）。本次冒险仍可继续，但下次打开会丢失。
+        </p>
+      )}
     </PixelPanel>
   )
+
+  const corruptNotice = corruptDetected ? (
+    <PixelPanel className="corrupt-notice" title="存档已自动重置">
+      <p className="corrupt-notice__text">
+        ⚠ 检测到旧存档数据已损坏，已为你重置为初始状态。如之前有重要进度，请用「导出存档」定期备份；
+        出现此提示通常意味着浏览器异常关闭或存储被其他程序修改。
+      </p>
+      <div className="row row--center">
+        <PixelButton onClick={dismissCorruptNotice}>知道了</PixelButton>
+      </div>
+    </PixelPanel>
+  ) : null
 
   if (scene.name === 'title') {
     return (
@@ -114,6 +134,7 @@ export default function App() {
           </div>
           {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
         </header>
+        {corruptNotice}
         {saveTools}
         <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
       </main>
@@ -128,6 +149,8 @@ export default function App() {
           金币 <strong className="gold">{save.player.gold}</strong>
         </p>
       </PixelPanel>
+
+      {corruptNotice}
 
       {scene.name === 'world' && (
         <>
