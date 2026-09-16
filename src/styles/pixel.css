@@ -889,7 +889,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  /* 轻入场：避免突兀；尊重 prefers-reduced-motion 由下方媒体查询兜底 */
   animation: donate-fade 0.16s ease-out;
 }
 
@@ -908,7 +907,7 @@ body {
   border: 4px solid var(--c-ink);
   box-shadow: 0 8px 0 var(--c-shadow);
   padding: 18px 18px 16px;
-  max-width: 320px;
+  max-width: 340px;
   width: 100%;
   text-align: center;
 }
@@ -922,38 +921,32 @@ body {
   letter-spacing: 2px;
 }
 
-.donate-qr {
-  margin: 0 auto 14px;
-  width: 220px;
-  height: 220px;
-  background: var(--c-white);
-  border: 3px solid var(--c-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 像素 QR 保持锐利 */
-  image-rendering: pixelated;
-}
-
-.donate-qr__img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-/* 收款码未就位时的占位卡（onError 回退） */
-.donate-qr__placeholder {
+.donate-body {
+  min-height: 120px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+}
+
+/* 占位态（赞助页 URL 未填） */
+.donate-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 8px;
+}
+
+.donate-placeholder__icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.donate-placeholder__text {
   color: var(--c-sea);
   font-size: 18px;
   letter-spacing: 4px;
-}
-
-.donate-qr__placeholder-line {
-  text-indent: 4px; /* 抵消末字间距，视觉居中 */
+  text-indent: 4px;
 }
 
 .donate-note {
