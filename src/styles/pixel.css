@@ -1058,6 +1058,59 @@ body {
   border-radius: 2px;
 }
 
+/* --- 复习模式 --- */
+.review-banner .pixel-panel__title {
+  background: var(--c-link);
+  color: var(--c-white);
+}
+
+.review-banner__text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 4px 0;
+}
+
+.review-banner__text strong {
+  color: var(--c-danger);
+  background: rgba(200, 85, 61, 0.12);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.review-skip {
+  margin-top: 12px;
+}
+
+.review-empty__text {
+  margin: 16px 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--c-success);
+}
+
+.review-result__big {
+  margin: 12px 0;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.review-result__stats {
+  margin: 8px 0 16px;
+  font-size: 14px;
+  text-align: center;
+  color: var(--c-ink-2);
+}
+
+.review-result__stats .ok {
+  color: var(--c-success);
+}
+
+.review-result__stats .bad {
+  color: var(--c-danger);
+}
+
 /* --- 离线模式横幅 --- */
 .offline-banner .pixel-panel__title {
   background: var(--c-ink-2);

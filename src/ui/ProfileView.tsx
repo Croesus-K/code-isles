@@ -11,6 +11,7 @@ interface Props {
   course: CourseDef
   save: SaveData
   onBack: () => void
+  onStartReview: () => void
 }
 
 interface ResolvedWrong {
@@ -64,7 +65,7 @@ function resolveWrong(
  * 已达成徽章 = 亮卡；未达成 = 灰卡，显示达成条件文案。
  * 错题本按区域 → 关卡分组，最多展示前 50 条（更多提示"+"）。
  */
-export function ProfileView({ course, save, onBack }: Props) {
+export function ProfileView({ course, save, onBack, onStartReview }: Props) {
   const earnedSet = useMemo(() => new Set(earnedBadgeIds(save, course)), [save, course])
   const earnedCount = earnedSet.size
   const totalCount = BADGES.length
@@ -131,6 +132,13 @@ export function ProfileView({ course, save, onBack }: Props) {
               ))}
             </ul>
             <div className="row row--center">
+              <PixelButton
+                onClick={onStartReview}
+                disabled={wrongList.length === 0}
+                title={wrongList.length === 0 ? '错题本为空，没有可复习的题目' : `复习 ${wrongList.length} 道错题`}
+              >
+                📘 复习这 {wrongList.length} 道错题
+              </PixelButton>
               <PixelButton
                 variant="ghost"
                 onClick={() => {

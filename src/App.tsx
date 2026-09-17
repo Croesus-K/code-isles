@@ -10,6 +10,7 @@ import { PixelButton } from './ui/PixelButton'
 import { PixelPanel } from './ui/PixelPanel'
 import { ProfileView } from './ui/ProfileView'
 import { RegionMap } from './ui/RegionMap'
+import { ReviewSessionView } from './ui/ReviewSessionView'
 import { WorldMap } from './ui/WorldMap'
 import { XpBar } from './ui/XpBar'
 
@@ -19,6 +20,7 @@ type Scene =
   | { name: 'region'; regionIndex: number }
   | { name: 'level'; regionIndex: number; levelIndex: number }
   | { name: 'profile' }
+  | { name: 'review' }
 
 export default function App() {
   const {
@@ -215,6 +217,15 @@ export default function App() {
           course={pythonBasics}
           save={save}
           onBack={() => setScene({ name: 'world' })}
+          onStartReview={() => setScene({ name: 'review' })}
+        />
+      )}
+
+      {scene.name === 'review' && (
+        <ReviewSessionView
+          course={pythonBasics}
+          save={save}
+          onExit={() => setScene({ name: 'profile' })}
         />
       )}
 
