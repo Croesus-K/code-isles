@@ -313,6 +313,33 @@ body {
   white-space: nowrap;
 }
 
+.region-card__right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.region-card__hot {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: bold;
+  border: 3px solid var(--c-danger);
+  padding: 2px 8px;
+  background: var(--c-parchment);
+  color: var(--c-danger);
+  white-space: nowrap;
+  animation: pulse-warn 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
 .badge--locked {
   opacity: 0.5;
 }

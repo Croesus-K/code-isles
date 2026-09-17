@@ -22,6 +22,18 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
   // 显式消费 hasWrong，避免 tsc unused warning（语义：错题本摘要是否需要渲染）
   void hasWrong
 
+  // 按 region 聚合错题数 + 累计 attempts —— 热力图分布
+  // key 形如 "regionId:levelId:qIdx"，按 ':' 切首段即可
+  const wrongByRegion = new Map<string, { count: number; attempts: number }>()
+  for (const r of wrongList) {
+    const regionId = r.questionKey.split(':')[0]
+    if (!regionId) continue
+    const cur = wrongByRegion.get(regionId) ?? { count: 0, attempts: 0 }
+    cur.count += 1
+    cur.attempts += r.attempts || 0
+    wrongByRegion.set(regionId, cur)
+  }
+
   return (
     <>
       <header className="title-block">
@@ -68,6 +80,7 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
             const done = clearedCount(save, region)
             const total = region.levels.length
             const allDone = total > 0 && done === total
+            const regionWrong = wrongByRegion.get(region.id)
             return (
               <PixelButton
                 key={region.id}
@@ -88,8 +101,18 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
                         : '通过上一区域的 Boss 关后解锁'}
                   </span>
                 </span>
-                <span className={`badge ${!unlocked ? 'badge--locked' : allDone ? 'badge--done' : ''}`}>
-                  {region.comingSoon ? '建设中' : allDone ? '已通关' : unlocked ? '可进入' : '未解锁'}
+                <span className="region-card__right">
+                  {regionWrong && regionWrong.count > 0 && (
+                    <span
+                      className="region-card__hot"
+                      title={`本区域 ${regionWrong.count} 道错题，累计答错 ${regionWrong.attempts} 次`}
+                    >
+                      🔴 {regionWrong.count}
+                    </span>
+                  )}
+                  <span className={`badge ${!unlocked ? 'badge--locked' : allDone ? 'badge--done' : ''}`}>
+                    {region.comingSoon ? '建设中' : allDone ? '已通关' : unlocked ? '可进入' : '未解锁'}
+                  </span>
                 </span>
               </PixelButton>
             )
