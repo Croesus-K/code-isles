@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { OrderQuestion } from '../content/course'
+import { t } from '../core/strings'
 import { HintButton } from './HintButton'
 import { PixelButton } from './PixelButton'
 
@@ -95,9 +96,9 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
       {!submitted ? (
         <>
           <p className="order-label">
-            你的顺序（点击某行可撤回） ·{' '}
-            <kbd className="kbd-hint">1~N</kbd> 加入 · <kbd className="kbd-hint">⌫</kbd> 撤回 ·{' '}
-            <kbd className="kbd-hint">R</kbd> 重置
+            {t('order.yourSeq', {
+              hints: t('order.kbdHint', { n: '1~N' }),
+            })}
           </p>
           <div className="order-seq">
             {placed.map((line, i) => (
@@ -105,9 +106,9 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
                 {i + 1}. {line}
               </PixelButton>
             ))}
-            {placed.length === 0 && <p className="order-empty">（点击下方代码行加入）</p>}
+            {placed.length === 0 && <p className="order-empty">{t('order.empty')}</p>}
           </div>
-          <p className="order-label">待选行：</p>
+          <p className="order-label">{t('order.pool')}</p>
           <div className="order-pool">
             {pool.map((line, i) => (
               <PixelButton
@@ -122,7 +123,7 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
           </div>
           <div className="row row--center">
             <PixelButton onClick={submit} disabled={pool.length > 0}>
-              提交顺序
+              {t('btn.submitOrder')}
             </PixelButton>
           </div>
           <HintButton hint={question.hint} onUsed={onHintUsed} />
@@ -130,12 +131,12 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
       ) : (
         <>
           <p className={`explain ${correct ? 'explain--good' : ''}`}>
-            {correct ? '排序正确！' : '顺序不对。'}
+            {correct ? t('result.orderRight') : t('result.orderWrong')}
             {question.explain}
           </p>
           {!correct && <pre className="code-block">{question.lines.join('\n')}</pre>}
           <div className="row row--center">
-            <PixelButton onClick={onNext}>{isLast ? '查看结算' : '下一题'}</PixelButton>
+            <PixelButton onClick={onNext}>{isLast ? t('btn.viewSummary') : t('btn.next')}</PixelButton>
           </div>
         </>
       )}

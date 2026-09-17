@@ -3,6 +3,7 @@ import { clearedCount, isRegionUnlocked } from '../core/progress'
 import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
 import { downloadWrongBookMarkdown } from '../core/wrongbook-export'
+import { t } from '../core/strings'
 import { PixelButton } from './PixelButton'
 import { PixelPanel } from './PixelPanel'
 
@@ -42,12 +43,12 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
       </header>
 
       {wrongCount > 0 && (
-        <PixelPanel title="📒 错题本">
+        <PixelPanel title={t('panel.wrongbook')}>
           <div className="row row--center wrongbook-summary">
             <span className="wrongbook-summary__count">
-              {wrongCount} 道题待巩固
+              {t('label.wrongCount', { n: wrongCount })}
               <span className="wrongbook-summary__attempts">
-                （累计答错 {totalAttempts} 次）
+                {t('label.totalAttempts', { n: totalAttempts })}
               </span>
             </span>
             <PixelButton
@@ -55,9 +56,9 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
                 audio.play('click')
                 onOpenProfile()
               }}
-              title="打开档案复习错题"
+              title={t('btn.review')}
             >
-              📘 复习
+              {t('btn.review')}
             </PixelButton>
             <PixelButton
               variant="ghost"
@@ -65,15 +66,15 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
                 audio.play('click')
                 downloadWrongBookMarkdown(wrongList, course)
               }}
-              title="导出 Markdown 清单"
+              title={t('btn.export')}
             >
-              📄 导出
+              {t('btn.export')}
             </PixelButton>
           </div>
         </PixelPanel>
       )}
 
-      <PixelPanel title="世界地图">
+      <PixelPanel title={t('panel.worldMap')}>
         <div className="stack">
           {course.regions.map((region, i) => {
             const unlocked = isRegionUnlocked(save, course, i)
@@ -95,23 +96,29 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
                   </span>
                   <span className="region-card__meta">
                     {region.comingSoon
-                      ? '建设中 · 后续版本开放'
+                      ? t('meta.building')
                       : unlocked
-                        ? `${done}/${total} 关已通关 · ${region.tagline}`
-                        : '通过上一区域的 Boss 关后解锁'}
+                        ? t('meta.regionTag', { done, total, tagline: region.tagline })
+                        : t('meta.lockedHint')}
                   </span>
                 </span>
                 <span className="region-card__right">
                   {regionWrong && regionWrong.count > 0 && (
                     <span
                       className="region-card__hot"
-                      title={`本区域 ${regionWrong.count} 道错题，累计答错 ${regionWrong.attempts} 次`}
+                      title={t('hot.tooltip', { count: regionWrong.count, attempts: regionWrong.attempts })}
                     >
                       🔴 {regionWrong.count}
                     </span>
                   )}
                   <span className={`badge ${!unlocked ? 'badge--locked' : allDone ? 'badge--done' : ''}`}>
-                    {region.comingSoon ? '建设中' : allDone ? '已通关' : unlocked ? '可进入' : '未解锁'}
+                    {region.comingSoon
+                      ? t('badge.building')
+                      : allDone
+                        ? t('badge.completed')
+                        : unlocked
+                          ? t('badge.available')
+                          : t('badge.locked')}
                   </span>
                 </span>
               </PixelButton>

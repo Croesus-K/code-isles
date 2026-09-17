@@ -1,4 +1,5 @@
 import type { Question } from '../content/course'
+import { t } from '../core/strings'
 import { BugView } from './BugView'
 import { ChoiceView } from './ChoiceView'
 import { FillView } from './FillView'
@@ -14,13 +15,13 @@ interface Props {
   onNext: () => void
 }
 
-const KIND_LABEL: Record<Question['kind'], string> = {
-  choice: '概念选择',
-  output: '输出预测',
-  fill: '代码填空',
-  order: '代码排序',
-  bug: '找错题',
-}
+const KIND_KEY = {
+  choice: 'kind.choice',
+  output: 'kind.output',
+  fill: 'kind.fill',
+  order: 'kind.order',
+  bug: 'kind.bug',
+} as const satisfies Record<Question['kind'], Parameters<typeof t>[0]>
 
 /** 题型分发器：题头（题型标签/进度/连击）+ 按题型分发的答题视图 */
 export function QuizQuestion({ question, index, total, combo, onAnswer, onHintUsed, onNext }: Props) {
@@ -29,9 +30,9 @@ export function QuizQuestion({ question, index, total, combo, onAnswer, onHintUs
   return (
     <div>
       <p className="q-progress">
-        <span className="kind-tag">{KIND_LABEL[question.kind]}</span>
-        第 {index + 1}/{total} 题
-        {combo >= 2 && <span className="combo">连击 ×{combo}</span>}
+        <span className="kind-tag">{t(KIND_KEY[question.kind])}</span>
+        {t('progress.label', { i: index + 1, n: total })}
+        {combo >= 2 && <span className="combo">{t('combo.label', { n: combo })}</span>}
       </p>
       {question.kind === 'fill' && <FillView question={question} {...shared} />}
       {question.kind === 'order' && <OrderView question={question} {...shared} />}
