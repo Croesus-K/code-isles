@@ -156,6 +156,65 @@ body {
   max-height: 320px;
 }
 
+/* ===== 世界地图 · 语言选择 ===== */
+
+.lang-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.lang-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  font-family: inherit;
+  background: #fbf3dd;
+  color: var(--c-ink);
+  border: 3px solid var(--c-ink);
+  box-shadow: 0 4px 0 var(--c-shadow);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.lang-tab:hover {
+  transform: translateY(-2px);
+}
+.lang-tab:focus-visible {
+  outline: 3px solid var(--c-gold);
+  outline-offset: 2px;
+}
+.lang-tab--active {
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 3px var(--c-gold), 0 4px 0 var(--c-shadow);
+  background: #fff8e6;
+}
+
+.lang-tab__name {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.lang-tab__meta {
+  font-size: 11px;
+  color: var(--c-ink-2);
+  margin: 4px 0 8px;
+}
+
+.lang-tab__bar {
+  display: block;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--c-ink-2);
+}
+.lang-tab__bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(to right, var(--c-xp), #79cf85);
+}
+
 /* ===== 三栏布局：左菜单 / 中内容 / 右公告（M6） ===== */
 
 .app-shell {

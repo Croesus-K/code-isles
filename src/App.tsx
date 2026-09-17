@@ -8,7 +8,7 @@ import {
   requestNotificationPermission,
   shouldNotifyToday,
 } from './core/notifications'
-import { COURSE_PREF_KEY, DEFAULT_COURSE_ID, getCourse } from './content/courses'
+import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse } from './content/courses'
 import { AnnouncePanel } from './ui/AnnouncePanel'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
@@ -253,6 +253,37 @@ export default function App() {
 
         {scene.name === 'world' && (
           <>
+            {/* 语言选择：进入世界地图后第一步选语言，切换即刷新下方地图 */}
+            <PixelPanel title="选择要学的语言">
+              <div className="lang-pick" role="tablist" aria-label="选择要学的语言">
+                {COURSES.map((c) => {
+                  const active = c.id === course.id
+                  const prog = courseProgress(save, c)
+                  const pct = prog.total > 0 ? Math.round((prog.cleared / prog.total) * 100) : 0
+                  return (
+                    <button
+                      key={c.id}
+                      role="tab"
+                      aria-selected={active}
+                      className={`lang-tab${active ? ' lang-tab--active' : ''}`}
+                      onClick={() => {
+                        if (active) return
+                        audio.play('click')
+                        onSelectCourse(c.id)
+                      }}
+                    >
+                      <span className="lang-tab__name">{c.lang ?? c.title}</span>
+                      <span className="lang-tab__meta">
+                        {prog.total > 0 ? `${prog.cleared}/${prog.total} 关 · ${pct}%` : '敬请期待'}
+                      </span>
+                      <span className="lang-tab__bar" aria-hidden="true">
+                        <span className="lang-tab__bar-fill" style={{ width: `${pct}%` }} />
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </PixelPanel>
             <WorldMap
               course={course}
               save={save}
