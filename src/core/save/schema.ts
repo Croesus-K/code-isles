@@ -5,6 +5,9 @@
 export const SAVE_VERSION = 1
 export const SAVE_KEY = 'code-isles-save-v1'
 
+/** 云端同步（GitHub Gist）里承载存档的固定文件名 */
+export const SAVE_GIST_FILE = 'code-isles-save.json'
+
 export type Stars = 0 | 1 | 2 | 3
 
 export interface PlayerState {

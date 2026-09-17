@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { pythonBasics } from './content/python-basics'
 import { audio } from './core/audio'
 import { useGameStore } from './core/store'
 import { applyUpdate, subscribeSw } from './core/serviceWorker'
@@ -9,6 +8,8 @@ import {
   requestNotificationPermission,
   shouldNotifyToday,
 } from './core/notifications'
+import { COURSE_PREF_KEY, DEFAULT_COURSE_ID, getCourse } from './content/courses'
+import { AnnouncePanel } from './ui/AnnouncePanel'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
 import { PixelButton } from './ui/PixelButton'
@@ -16,6 +17,7 @@ import { PixelPanel } from './ui/PixelPanel'
 import { ProfileView } from './ui/ProfileView'
 import { RegionMap } from './ui/RegionMap'
 import { ReviewSessionView } from './ui/ReviewSessionView'
+import { SideMenu } from './ui/SideMenu'
 import { WorldMap } from './ui/WorldMap'
 import { XpBar } from './ui/XpBar'
 
@@ -26,6 +28,14 @@ type Scene =
   | { name: 'level'; regionIndex: number; levelIndex: number }
   | { name: 'profile' }
   | { name: 'review'; focusQuestionKey?: string }
+
+function readCoursePref(): string {
+  try {
+    return localStorage.getItem(COURSE_PREF_KEY) ?? DEFAULT_COURSE_ID
+  } catch {
+    return DEFAULT_COURSE_ID
+  }
+}
 
 export default function App() {
   const {
@@ -43,8 +53,20 @@ export default function App() {
   const [scene, setScene] = useState<Scene>({ name: 'title' })
   const [status, setStatus] = useState('欢迎来到群岛。')
   const [showDonate, setShowDonate] = useState(false)
+  const [courseId, setCourseId] = useState(readCoursePref)
   const fileRef = useRef<HTMLInputElement>(null)
   const [swState, setSwState] = useState({ needUpdate: false, offline: false })
+
+  const course = getCourse(courseId)
+
+  // 课程选择持久化（独立于存档：换课不清进度，也不随存档导出）
+  useEffect(() => {
+    try {
+      localStorage.setItem(COURSE_PREF_KEY, courseId)
+    } catch {
+      // 隐私模式下存不进去也无妨，会话内仍生效
+    }
+  }, [courseId])
 
   // 同步 audio 模块与存档中的音效开关。
   useEffect(() => {
@@ -56,10 +78,10 @@ export default function App() {
     return subscribeSw(setSwState)
   }, [])
 
-  // 进入"档案"场景时自动 reconcile 一次徽章（不强制，但能让旧存档补齐徽章）。
+  // 进入"档案"场景时自动 reconcile 一次徽章（按当前课程计算）。
   useEffect(() => {
-    if (scene.name === 'profile') syncBadges(pythonBasics)
-  }, [scene.name, syncBadges])
+    if (scene.name === 'profile') syncBadges(course)
+  }, [scene.name, course, syncBadges])
 
   // 进入 WorldMap 时，如已有错题且今日未提醒 → 主动请求权限 + 发一次通知
   // 注意：仅在 world scene 触发，不在 game scene 打断玩家
@@ -79,6 +101,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.name])
 
+  // —— 工具箱动作（渲染在左菜单）——
   const download = () => {
     audio.play('click')
     const blob = new Blob([exportSave()], { type: 'application/json' })
@@ -88,6 +111,7 @@ export default function App() {
     a.download = 'code-isles-save.json'
     a.click()
     URL.revokeObjectURL(url)
+    setStatus('存档已导出。')
   }
 
   const onImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -97,6 +121,7 @@ export default function App() {
     if (!file) return
     const ok = importSave(await file.text())
     setStatus(ok ? '存档导入成功。' : '导入失败：这不是有效的群岛存档。')
+    if (ok) setStatus('存档导入成功。')
   }
 
   const onToggleSound = () => {
@@ -105,41 +130,19 @@ export default function App() {
     if (!save.settings.soundOn) audio.play('click')
   }
 
-  const saveTools = (
-    <PixelPanel title="工具箱">
-      <div className="row">
-        <PixelButton variant="ghost" onClick={download}>
-          导出存档
-        </PixelButton>
-        <PixelButton variant="ghost" onClick={() => fileRef.current?.click()}>
-          导入存档
-        </PixelButton>
-        <PixelButton variant="ghost" onClick={onToggleSound}>
-          音效：{save.settings.soundOn ? '开' : '关'}
-        </PixelButton>
-        <PixelButton variant="ghost" onClick={() => setShowDonate(true)}>
-          打赏作者
-        </PixelButton>
-        <PixelButton
-          variant="danger"
-          onClick={() => {
-            audio.play('click')
-            resetSave()
-            setStatus('存档已清除。')
-          }}
-        >
-          清除存档
-        </PixelButton>
-      </div>
-      <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
-      <p className="status-line">{status}</p>
-      {persistFailed && (
-        <p className="persist-warning" role="status">
-          ⚠ 进度无法写入浏览器（隐私模式或存储已满）。本次冒险仍可继续，但下次打开会丢失。
-        </p>
-      )}
-    </PixelPanel>
-  )
+  const onReset = () => {
+    audio.play('click')
+    resetSave()
+    setScene({ name: 'title' })
+    setStatus('存档已清除。')
+  }
+
+  // 课程切换：进行中的关卡/区域回退到新课程的世界地图（title 场景原地不动）
+  const onSelectCourse = (id: string) => {
+    setCourseId(id)
+    setScene((s) => (s.name === 'title' ? s : { name: 'world' }))
+    setStatus(`已切换到「${getCourse(id).title}」。`)
+  }
 
   const corruptNotice = corruptDetected ? (
     <PixelPanel className="corrupt-notice" title="存档已自动重置">
@@ -183,102 +186,113 @@ export default function App() {
     </PixelPanel>
   ) : null
 
-  if (scene.name === 'title') {
-    return (
+  const statusLine = <p className="status-line">{status}</p>
+
+  return (
+    <div className="app-shell">
+      <SideMenu
+        sceneName={scene.name}
+        activeCourse={course}
+        save={save}
+        onSelectCourse={onSelectCourse}
+        onGoWorld={() => setScene({ name: 'world' })}
+        onGoProfile={() => setScene({ name: 'profile' })}
+        onGoReview={() => setScene({ name: 'review' })}
+        onExport={download}
+        onImportClick={() => fileRef.current?.click()}
+        onToggleSound={onToggleSound}
+        soundOn={save.settings.soundOn}
+        onDonate={() => setShowDonate(true)}
+        onReset={onReset}
+        persistFailed={persistFailed}
+      />
+
       <main className="screen">
-        <header className="title-block">
-          <h1 className="game-logo">代码群岛</h1>
-          <p className="game-tagline">Code Isles · 用像素冒险学正经知识</p>
-          <div className="row row--center">
-            <PixelButton size="lg" onClick={() => setScene({ name: 'world' })}>
-              {hasSave ? '继续冒险' : '开始冒险'}
-            </PixelButton>
-          </div>
-          {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
-        </header>
         {offlineBanner}
         {updateBanner}
         {corruptNotice}
-        {saveTools}
-        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
-      </main>
-    )
-  }
 
-  return (
-    <main className="screen">
-      <PixelPanel title="冒险者">
-        <XpBar xp={save.player.xp} />
-        <p className="stat-line status-bar__gold">
-          金币 <strong className="gold">{save.player.gold}</strong>
-        </p>
-      </PixelPanel>
-
-      {offlineBanner}
-      {updateBanner}
-      {corruptNotice}
-
-      {scene.name === 'world' && (
-        <>
-          <WorldMap
-            course={pythonBasics}
-            save={save}
-            onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
-            onOpenProfile={() => setScene({ name: 'profile' })}
-          />
-          <PixelPanel title="冒险者档案">
+        {scene.name === 'title' && (
+          <header className="title-block">
+            <h1 className="game-logo">代码群岛</h1>
+            <p className="game-tagline">{course.title} · 用像素冒险学正经知识</p>
             <div className="row row--center">
-              <PixelButton onClick={() => setScene({ name: 'profile' })}>
-                冒险者徽章
+              <PixelButton size="lg" onClick={() => setScene({ name: 'world' })}>
+                {hasSave ? '继续冒险' : '开始冒险'}
               </PixelButton>
             </div>
+            {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
+            {statusLine}
+          </header>
+        )}
+
+        {scene.name !== 'title' && (
+          <PixelPanel title="冒险者">
+            <XpBar xp={save.player.xp} />
+            <p className="stat-line status-bar__gold">
+              金币 <strong className="gold">{save.player.gold}</strong>
+            </p>
           </PixelPanel>
-        </>
-      )}
+        )}
 
-      {scene.name === 'profile' && (
-        <ProfileView
-          course={pythonBasics}
-          save={save}
-          onBack={() => setScene({ name: 'world' })}
-          onStartReview={() => setScene({ name: 'review' })}
-          onStartReviewQuestion={(qk) => setScene({ name: 'review', focusQuestionKey: qk })}
-        />
-      )}
+        {scene.name === 'world' && (
+          <>
+            <WorldMap
+              course={course}
+              save={save}
+              onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
+              onOpenProfile={() => setScene({ name: 'profile' })}
+            />
+            {statusLine}
+          </>
+        )}
 
-      {scene.name === 'review' && (
-        <ReviewSessionView
-          course={pythonBasics}
-          save={save}
-          onExit={() => setScene({ name: 'profile' })}
-          focusQuestionKey={scene.focusQuestionKey}
-        />
-      )}
+        {scene.name === 'profile' && (
+          <ProfileView
+            course={course}
+            save={save}
+            onBack={() => setScene({ name: 'world' })}
+            onStartReview={() => setScene({ name: 'review' })}
+            onStartReviewQuestion={(qk) => setScene({ name: 'review', focusQuestionKey: qk })}
+          />
+        )}
 
-      {scene.name === 'region' && (
-        <RegionMap
-          region={pythonBasics.regions[scene.regionIndex]}
-          save={save}
-          onBack={() => setScene({ name: 'world' })}
-          onEnterLevel={(levelIndex) =>
-            setScene({ name: 'level', regionIndex: scene.regionIndex, levelIndex })
-          }
-        />
-      )}
+        {scene.name === 'review' && (
+          <ReviewSessionView
+            course={course}
+            save={save}
+            onExit={() => setScene({ name: 'profile' })}
+            focusQuestionKey={scene.focusQuestionKey}
+          />
+        )}
 
-      {scene.name === 'level' && (
-        <LevelView
-          regionId={pythonBasics.regions[scene.regionIndex].id}
-          level={pythonBasics.regions[scene.regionIndex].levels[scene.levelIndex]}
-          onBack={() => setScene({ name: 'region', regionIndex: scene.regionIndex })}
-        />
-      )}
+        {scene.name === 'region' && (
+          <RegionMap
+            region={course.regions[scene.regionIndex]}
+            save={save}
+            onBack={() => setScene({ name: 'world' })}
+            onEnterLevel={(levelIndex) =>
+              setScene({ name: 'level', regionIndex: scene.regionIndex, levelIndex })
+            }
+          />
+        )}
 
-      {saveTools}
-      <footer className="footnote">
-        M0~M5：基础架构 + Python 基础课程 + 经济闭环 + 成就系统 + 打赏入口。完整规划见 docs/product-plan.md
-      </footer>
-      <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
-    </main>
+        {scene.name === 'level' && (
+          <LevelView
+            regionId={course.regions[scene.regionIndex].id}
+            level={course.regions[scene.regionIndex].levels[scene.levelIndex]}
+            onBack={() => setScene({ name: 'region', regionIndex: scene.regionIndex })}
+          />
+        )}
+
+        <footer className="footnote">
+          代码群岛 · 多课程像素学习游戏。左侧菜单可切换课程 / 云端同步 / 工具箱；右侧为更新公告。
+        </footer>
+        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
+      </main>
+
+      <AnnouncePanel />
+    </div>
   )
 }
