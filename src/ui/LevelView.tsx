@@ -20,6 +20,8 @@ type Phase = 'learn' | 'quiz' | 'result'
 
 export function LevelView({ regionId, level, onBack }: Props) {
   const completeLevel = useGameStore((s) => s.completeLevel)
+  const recordWrongAnswer = useGameStore((s) => s.recordWrongAnswer)
+  const removeFromWrongAnswers = useGameStore((s) => s.removeFromWrongAnswers)
   const [phase, setPhase] = useState<Phase>('learn')
   const [qIndex, setQIndex] = useState(0)
   const [wrong, setWrong] = useState(0)
@@ -69,6 +71,12 @@ export function LevelView({ regionId, level, onBack }: Props) {
       { stars, bonusGold: bonus },
       pythonBasics,
     )
+    // 全对通关：把本关所有题移出错题本（用户已经掌握）
+    if (wrong === 0) {
+      for (let i = 0; i < level.questions.length; i++) {
+        removeFromWrongAnswers(`${regionId}:${level.id}:${i}`)
+      }
+    }
     const after = useGameStore.getState().save
     const earnedNow = earnedBadgeIds(after, pythonBasics)
     const fresh = earnedNow.filter((id) => !earnedBefore.has(id))
@@ -118,7 +126,10 @@ export function LevelView({ regionId, level, onBack }: Props) {
             total={level.questions.length}
             combo={streak}
             onAnswer={(correct) => {
-              if (!correct) setWrong((w) => w + 1)
+              if (!correct) {
+                setWrong((w) => w + 1)
+                recordWrongAnswer(`${regionId}:${level.id}:${qIndex}`)
+              }
               handleAnswer(correct)
             }}
             onHintUsed={() => {

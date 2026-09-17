@@ -12,6 +12,7 @@ import {
   type PlayerState,
   type SaveData,
   type Stars,
+  type WrongAnswerRecord,
 } from './save/schema'
 import { clearSaved, loadSave, persistSave } from './save/storage'
 
@@ -51,6 +52,12 @@ interface GameStore {
   resetSave: () => void
   /** 用户关掉损坏提示横幅 */
   dismissCorruptNotice: () => void
+  /** 答错时记录到错题本（同题反复错会累计 attempts）。 */
+  recordWrongAnswer: (questionKey: string) => void
+  /** 答对 / 复习通过时把题目移出错题本（如果存在）。 */
+  removeFromWrongAnswers: (questionKey: string) => void
+  /** 清空错题本（用户主动操作）。 */
+  clearWrongAnswers: () => void
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -134,5 +141,30 @@ export const useGameStore = create<GameStore>()((set, get) => {
       set({ save: defaultSave(), hasSave: false, persistFailed: false })
     },
     dismissCorruptNotice: () => set({ corruptDetected: false }),
+    recordWrongAnswer: (questionKey) => {
+      const cur = get().save
+      const list = cur.wrongAnswers ?? []
+      const idx = list.findIndex((w) => w.questionKey === questionKey)
+      const now = new Date().toISOString()
+      const next: WrongAnswerRecord[] =
+        idx >= 0
+          ? list.map((w, i) =>
+              i === idx ? { ...w, attempts: w.attempts + 1, wrongAt: now } : w,
+            )
+          : [...list, { questionKey, wrongAt: now, attempts: 1 }]
+      commit({ ...cur, wrongAnswers: next })
+    },
+    removeFromWrongAnswers: (questionKey) => {
+      const cur = get().save
+      const list = cur.wrongAnswers ?? []
+      const next = list.filter((w) => w.questionKey !== questionKey)
+      if (next.length === list.length) return // 没找到就不写
+      commit({ ...cur, wrongAnswers: next })
+    },
+    clearWrongAnswers: () => {
+      const cur = get().save
+      if ((cur.wrongAnswers ?? []).length === 0) return
+      commit({ ...cur, wrongAnswers: [] })
+    },
   }
 })

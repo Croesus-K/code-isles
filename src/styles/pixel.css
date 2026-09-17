@@ -987,6 +987,77 @@ body {
   margin: 8px 0 0;
 }
 
+/* --- 错题本 --- */
+.wrongbook .pixel-panel__title {
+  background: var(--c-danger);
+  color: var(--c-white);
+}
+
+.wrongbook--empty .pixel-panel__title {
+  background: var(--c-success);
+  color: var(--c-white);
+}
+
+.wrongbook__empty {
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--c-success);
+  text-align: center;
+}
+
+.wrongbook__hint {
+  margin: 8px 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--c-ink-2);
+}
+
+.wrongbook__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.wrongbook__item {
+  display: grid;
+  grid-template-columns: minmax(120px, 30%) 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 4px;
+  border-bottom: 1px dashed var(--c-ink-3);
+  font-size: 13px;
+}
+
+.wrongbook__item:last-child {
+  border-bottom: none;
+}
+
+.wrongbook__where {
+  color: var(--c-link);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wrongbook__q {
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wrongbook__attempts {
+  color: var(--c-danger);
+  font-weight: bold;
+  font-size: 12px;
+  background: rgba(200, 85, 61, 0.1);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
 /* --- 离线模式横幅 --- */
 .offline-banner .pixel-panel__title {
   background: var(--c-ink-2);

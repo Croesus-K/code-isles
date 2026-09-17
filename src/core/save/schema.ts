@@ -27,6 +27,15 @@ export interface Settings {
   soundOn: boolean
 }
 
+/** 单条错题记录。questionKey = "${regionId}:${levelId}:${questionIndex}"。 */
+export interface WrongAnswerRecord {
+  questionKey: string
+  /** ISO 时间戳；首次答错的时间，之后每次答错刷新。 */
+  wrongAt: string
+  /** 该题累计答错次数（去重后只计 1 次/题，但同题反复错会递增）。 */
+  attempts: number
+}
+
 export interface SaveData {
   version: number
   player: PlayerState
@@ -34,6 +43,8 @@ export interface SaveData {
   regions: Record<string, RegionProgress>
   /** 已获得徽章的 id 列表 */
   badges: string[]
+  /** 答错过的题目记录（错题本） */
+  wrongAnswers: WrongAnswerRecord[]
   settings: Settings
   updatedAt: string
 }
@@ -44,8 +55,27 @@ export function defaultSave(): SaveData {
     player: { xp: 0, gold: 0 },
     regions: {},
     badges: [],
+    wrongAnswers: [],
     settings: { soundOn: true },
     updatedAt: '',
+  }
+}
+
+function validateWrongAnswer(v: unknown): WrongAnswerRecord | null {
+  if (typeof v !== 'object' || v === null) return null
+  const r = v as Record<string, unknown>
+  if (typeof r.questionKey !== 'string' || r.questionKey.length === 0) return null
+  if (
+    typeof r.attempts !== 'number' ||
+    !Number.isInteger(r.attempts) ||
+    r.attempts <= 0
+  ) {
+    return null
+  }
+  return {
+    questionKey: r.questionKey,
+    wrongAt: typeof r.wrongAt === 'string' ? r.wrongAt : '',
+    attempts: r.attempts,
   }
 }
 
@@ -90,6 +120,13 @@ export function validateSave(data: unknown): SaveData | null {
   if (!settings || typeof settings.soundOn !== 'boolean') return null
   if (typeof d.regions !== 'object' || d.regions === null) return null
   if (!Array.isArray(d.badges) || !d.badges.every((b) => typeof b === 'string')) return null
+  // 兼容旧存档：缺少 wrongAnswers 视为空数组；数组内逐条校验，非法条目丢弃
+  const rawWrong = Array.isArray(d.wrongAnswers) ? d.wrongAnswers : []
+  const wrongAnswers: WrongAnswerRecord[] = []
+  for (const item of rawWrong) {
+    const wa = validateWrongAnswer(item)
+    if (wa) wrongAnswers.push(wa)
+  }
   const regions: Record<string, RegionProgress> = {}
   for (const [key, val] of Object.entries(d.regions)) {
     const rp = validateRegionProgress(val)
@@ -101,6 +138,7 @@ export function validateSave(data: unknown): SaveData | null {
     player: { xp: player.xp, gold: player.gold },
     regions,
     badges: d.badges as string[],
+    wrongAnswers,
     settings: { soundOn: settings.soundOn },
     updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
   }
