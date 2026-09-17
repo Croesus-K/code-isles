@@ -12,6 +12,7 @@ import { COURSE_PREF_KEY, DEFAULT_COURSE_ID, getCourse } from './content/courses
 import { AnnouncePanel } from './ui/AnnouncePanel'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
+import { MainMenu } from './ui/MainMenu'
 import { PixelButton } from './ui/PixelButton'
 import { PixelPanel } from './ui/PixelPanel'
 import { ProfileView } from './ui/ProfileView'
@@ -188,6 +189,28 @@ export default function App() {
 
   const statusLine = <p className="status-line">{status}</p>
 
+  // 独立主菜单：开屏页全屏独占，不与游戏内三栏壳混用
+  if (scene.name === 'title') {
+    return (
+      <main className="mainmenu-screen">
+        {offlineBanner}
+        {updateBanner}
+        {corruptNotice}
+        <MainMenu
+          activeCourse={course}
+          save={save}
+          hasSave={hasSave}
+          onSelectCourse={onSelectCourse}
+          onStart={() => setScene({ name: 'world' })}
+          onProfile={() => setScene({ name: 'profile' })}
+          onReview={() => setScene({ name: 'review' })}
+          statusLine={statusLine}
+        />
+        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
+      </main>
+    )
+  }
+
   return (
     <div className="app-shell">
       <SideMenu
@@ -212,28 +235,12 @@ export default function App() {
         {updateBanner}
         {corruptNotice}
 
-        {scene.name === 'title' && (
-          <header className="title-block">
-            <h1 className="game-logo">代码群岛</h1>
-            <p className="game-tagline">{course.title} · 用像素冒险学正经知识</p>
-            <div className="row row--center">
-              <PixelButton size="lg" onClick={() => setScene({ name: 'world' })}>
-                {hasSave ? '继续冒险' : '开始冒险'}
-              </PixelButton>
-            </div>
-            {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
-            {statusLine}
-          </header>
-        )}
-
-        {scene.name !== 'title' && (
-          <PixelPanel title="冒险者">
-            <XpBar xp={save.player.xp} />
-            <p className="stat-line status-bar__gold">
-              金币 <strong className="gold">{save.player.gold}</strong>
-            </p>
-          </PixelPanel>
-        )}
+        <PixelPanel title="冒险者">
+          <XpBar xp={save.player.xp} />
+          <p className="stat-line status-bar__gold">
+            金币 <strong className="gold">{save.player.gold}</strong>
+          </p>
+        </PixelPanel>
 
         {scene.name === 'world' && (
           <>

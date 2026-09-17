@@ -10,5 +10,6 @@ export const pythonBasics: CourseDef = {
   id: 'python-basics',
   title: '代码群岛',
   subtitle: 'Code Isles · 用像素冒险学正经知识 · 首期课程：Python 基础',
+  lang: 'Python',
   regions: [region1, region2, region3, region4, region5],
 }

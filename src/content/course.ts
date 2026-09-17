@@ -92,5 +92,7 @@ export interface CourseDef {
   id: string
   title: string
   subtitle: string
+  /** 语言名（"Python" / "JavaScript"），课程选择 UI 用它，避免与游戏级标题混淆 */
+  lang?: string
   regions: RegionDef[]
 }

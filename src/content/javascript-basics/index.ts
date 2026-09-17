@@ -130,5 +130,6 @@ export const javascriptBasics: CourseDef = {
   id: 'javascript-basics',
   title: 'JS 基础',
   subtitle: 'JavaScript 入门：变量、类型与模板字符串',
+  lang: 'JavaScript',
   regions: [regionJ1, regionJ2],
 }

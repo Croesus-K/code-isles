@@ -63,7 +63,7 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
   return (
     <>
       <header className="title-block">
-        <h1 className="game-logo game-logo--small">{course.title}</h1>
+        <h1 className="game-logo game-logo--small">{course.lang ?? course.title}</h1>
         <p className="game-tagline">{course.subtitle}</p>
       </header>
 

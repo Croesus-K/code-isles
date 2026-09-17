@@ -51,7 +51,7 @@ export function SideMenu(p: SideMenuProps) {
                   }}
                   aria-current={active ? 'true' : undefined}
                 >
-                  <span className="course-item__name">{c.title}</span>
+                  <span className="course-item__name">{c.lang ?? c.title}</span>
                   <span className="course-item__meta">
                     {prog.total > 0 ? `${prog.cleared}/${prog.total} 关 · ${pct}%` : '敬请期待'}
                   </span>
