@@ -93,14 +93,30 @@ export function DonateModal({ open, onClose }: Props) {
   }
 
   return (
+    // role="dialog" + aria-modal="true" 已声明为可交互弹窗；eslint 无法推断故显式禁用
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       className="donate-overlay"
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          onClose()
+        }
+      }}
       role="dialog"
       aria-modal="true"
       aria-label="打赏作者"
+      tabIndex={-1}
     >
-      <div className="donate-card" ref={cardRef} onClick={(e) => e.stopPropagation()}>
+      {/* card 是 overlay 的子节点，stopPropagation 防冒泡关闭；div 上无 role 故需禁用此条 */}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div
+        className="donate-card"
+        ref={cardRef}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         <div className="donate-card__title">请冒险者喝杯朗姆酒 🍹</div>
         <div className="donate-body">
           {DONATE_URL ? (
