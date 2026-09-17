@@ -1058,6 +1058,25 @@ body {
   border-radius: 2px;
 }
 
+/* --- Home 错题本摘要 --- */
+.wrongbook-summary {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.wrongbook-summary__count {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--c-danger);
+}
+
+.wrongbook-summary__attempts {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--c-ink-2);
+}
+
 /* --- 复习模式 --- */
 .review-banner .pixel-panel__title {
   background: var(--c-link);

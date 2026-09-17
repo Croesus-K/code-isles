@@ -201,6 +201,7 @@ export default function App() {
             course={pythonBasics}
             save={save}
             onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
+            onOpenProfile={() => setScene({ name: 'profile' })}
           />
           <PixelPanel title="冒险者档案">
             <div className="row row--center">
