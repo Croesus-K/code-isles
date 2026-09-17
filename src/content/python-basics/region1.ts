@@ -56,6 +56,15 @@ export const region1: RegionDef = {
           explain: '第 1 行：变量名必须以字母或下划线开头，1st_place 以数字开头会触发 SyntaxError。要改成 first_place 或 _1st_place。',
         },
         {
+          kind: 'fill',
+          prompt: '补全赋值运算符，把 5 放进名为 score 的宝箱：',
+          code: 'score ___ 5   # 把 5 存进名为 score 的变量',
+          answers: ['='],
+          placeholder: '一个符号',
+          hint: '把右边的值放进左边的宝箱，用哪个符号？',
+          explain: '= 是赋值符号，把右边的值放进左边的变量名：score = 5 之后，score 这个宝箱里就装了 5。= 不是数学上的"等于"，它的意思是"存进"。',
+        },
+        {
           kind: 'output',
           prompt: '执行后 b 是多少？',
           code: 'a = 3\nb = a\na = 7',
@@ -108,6 +117,14 @@ export const region1: RegionDef = {
           placeholder: '取余数用哪个运算符',
           hint: '7 除以 2 余几？用哪个符号能拿到余数？',
           explain: '% 是取余运算符：n % 2 为 0 就说明 n 能被 2 整除，是偶数；为 1 就是奇数。这是判断奇偶的标准写法。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面哪一行会报错？',
+          code: ['x = 10', 'y = x / 0'],
+          answerLine: 1,
+          hint: '除法的右边不能是几？',
+          explain: '第 2 行：x / 0 触发 ZeroDivisionError。任何数除以 0 都报错，包括 0/0 也是。先判断 y 是否为 0 再做除法，或者用 try/except 兜住。',
         },
         {
           kind: 'output',
@@ -216,6 +233,14 @@ export const region1: RegionDef = {
           placeholder: '取余数用哪个运算符',
           hint: '9 除以 4 商 2 余 1，余数怎么拿？',
           explain: '% 是取余运算符，9 % 4 得 1。整除和取余是一对搭档：商 × 除数 + 余数 = 被除数（2 × 4 + 1 = 9）。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面哪一行会报错？',
+          code: ['msg = "你好" + "冒险者"', '"欢迎" + 42'],
+          answerLine: 1,
+          hint: '字符串和整数能用 + 拼起来吗？',
+          explain: '第 2 行：字符串和整数不能用 + 直接拼，触发 TypeError。正确写法："欢迎" + str(42)，或用 f-string：f"欢迎{42}"。',
         },
         {
           kind: 'output',

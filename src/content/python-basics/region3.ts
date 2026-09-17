@@ -1,16 +1,22 @@
 import type { RegionDef } from '../course'
 
-/** 区域 3：循环洞窟（for / while / break / continue） */
+/**
+ * 区域 3：循环洞窟（高效入门版）
+ *
+ * 每关 4-5 题 = 1 选择 + 1 输出 + 1 填空 + 1 改错 (+ 可选 应用)，
+ * 螺旋复习 region1-2 的变量、字符串、布尔值。
+ */
 export const region3: RegionDef = {
   id: '3',
   name: '循环洞窟',
   tagline: '重复的活儿交给咒语',
   levels: [
+    // ============ 3-1 for 循环 + range ============
     {
       id: '3-1',
       name: '复读机阵',
-      xp: 40,
-      gold: 14,
+      xp: 42,
+      gold: 15,
       learn: {
         title: 'for 循环：让咒语自己重复',
         body: [
@@ -39,23 +45,6 @@ export const region3: RegionDef = {
           explain: 'range(3) 产生 0、1、2，循环变量 i 依次取这三个值，print 三次分别输出 0、1、2，各占一行。',
         },
         {
-          kind: 'choice',
-          prompt: 'range(1, 4) 生成的序列是？',
-          options: ['1, 2, 3', '1, 2, 3, 4', '0, 1, 2, 3', '2, 3, 4'],
-          answerIndex: 0,
-          hint: '两个参数时，第一个是起点，第二个是终点（不含）。',
-          explain: 'range(1, 4) 从 1 开始，到 4 之前停下——含头不含尾，生成 1、2、3。记住口诀：含头不含尾。',
-        },
-        {
-          kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'for i in range(0, 10, 2):\n    print(i)',
-          options: ['0\n2\n4\n6\n8', '0\n2\n4\n6\n8\n10', '2\n4\n6\n8', '1\n3\n5\n7\n9'],
-          answerIndex: 0,
-          hint: '第三个参数是步长——每次往前跳几格。',
-          explain: 'range(0, 10, 2) 从 0 出发，每次加 2，到 10 之前停：0、2、4、6、8。含头不含尾，所以不包含 10。',
-        },
-        {
           kind: 'fill',
           prompt: '补全代码，让循环打印 1 到 5（填一个函数名）：',
           code: 'for i in ___(1, 6):\n    print(i)',
@@ -65,19 +54,31 @@ export const region3: RegionDef = {
           explain: 'range(1, 6) 生成 1 到 5（含头不含尾），配合 for 循环依次取出。range 是 for 循环最常用的"数字生成器"。',
         },
         {
-          kind: 'order',
-          prompt: '把这三行排成正确的循环（注意缩进和执行顺序）：',
-          lines: ['for i in range(3):', '    print(i)', 'print("结束")'],
-          hint: '先写循环头，再写循环体（要缩进），最后写循环外的语句（不缩进）。',
-          explain: 'for 行是循环头，缩进的 print(i) 是循环体跑三遍，不缩进的 print("结束") 在循环结束后只执行一次。缩进决定了谁在循环里、谁在循环外。',
+          kind: 'bug',
+          prompt: '下面两行里，哪一行会报错？',
+          code: ['for i in range(3.5):', '    print(i)'],
+          answerLine: 0,
+          hint: 'range 的参数能是小数吗？',
+          explain: 'range 的参数必须是整数，传入 3.5（float）会抛 TypeError: "float" object cannot be interpreted as an integer。需要整数迭代时先 int(...) 转一下。',
+        },
+        {
+          kind: 'output',
+          prompt: '执行后 total 是多少？',
+          code: 'total = 0\nfor i in range(1, 4):\n    total = total + i\ntotal',
+          options: ['6', '10', '7', '3'],
+          answerIndex: 0,
+          hint: 'range(1, 4) 生成 1、2、3（含头不含尾），累加到 total 里。',
+          explain: 'range(1, 4) 生成 1、2、3 三轮循环。每次把 total 加上当前的 i：0+1=1，1+2=3，3+3=6。这是最经典的"累加器"模式——后面会反复用到。',
         },
       ],
     },
+
+    // ============ 3-2 while 循环 ============
     {
       id: '3-2',
       name: '无底回廊',
-      xp: 42,
-      gold: 15,
+      xp: 45,
+      gold: 16,
       learn: {
         title: 'while 循环：只要条件成立就继续',
         body: [
@@ -97,24 +98,6 @@ export const region3: RegionDef = {
           explain: 'while 在每轮开始前检查条件：条件为 True 就继续跑循环体，为 False 就退出循环。和 for 不同，while 没有内置的"跑几次"——一切看条件。',
         },
         {
-          kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'count = 0\nwhile count < 3:\n    print(count)\n    count += 1',
-          options: ['0\n1\n2', '1\n2\n3', '0\n1\n2\n3', '0\n1\n2\n3\n4'],
-          answerIndex: 0,
-          hint: '先看 count 的初值，再看条件什么时候不满足。',
-          explain: 'count 从 0 开始，每轮先 print 再加 1。count 为 0、1、2 时条件成立，输出 0、1、2；count 变 3 时 3 < 3 不成立，循环结束。',
-        },
-        {
-          kind: 'choice',
-          prompt: '下面这段代码会怎样？',
-          code: 'count = 0\nwhile count < 3:\n    print(count)',
-          options: ['输出 0、1、2 后正常结束', '一直输出 0，停不下来', '输出 0 后报错', '什么都不输出'],
-          answerIndex: 1,
-          hint: '循环体里有没有人去改 count？',
-          explain: '循环体只有 print(count)，count 从 0 开始且永远不会变，条件 count < 3 永远为 True——这就是死循环。在终端按 Ctrl + C 才能强行中断。',
-        },
-        {
           kind: 'bug',
           prompt: '下面四行里，哪一行会报错？',
           code: ['n = 0', 'while n < 3', '    print(n)', '    n += 1'],
@@ -132,8 +115,17 @@ export const region3: RegionDef = {
           explain: 'count += 1 是 count = count + 1 的简写。while 循环体里必须更新条件涉及的变量，否则条件永远不变，变成死循环。',
         },
         {
+          kind: 'choice',
+          prompt: '下面这段代码会怎样？',
+          code: 'count = 0\nwhile count < 3:\n    print(count)',
+          options: ['输出 0、1、2 后正常结束', '一直输出 0，停不下来', '输出 0 后报错', '什么都不输出'],
+          answerIndex: 1,
+          hint: '循环体里有没有人去改 count？',
+          explain: '循环体只有 print(count)，count 从 0 开始且永远不会变，条件 count < 3 永远为 True——这就是死循环。在终端按 Ctrl + C 才能强行中断。',
+        },
+        {
           kind: 'output',
-          prompt: '这段代码运行后输出什么？',
+          prompt: '执行后输出什么？',
           code: 'n = 5\nwhile n > 0:\n    print(n)\n    n -= 1',
           options: ['5\n4\n3\n2\n1', '5\n4\n3\n2\n1\n0', '1\n2\n3\n4\n5', '0\n1\n2\n3\n4\n5'],
           answerIndex: 0,
@@ -142,11 +134,13 @@ export const region3: RegionDef = {
         },
       ],
     },
+
+    // ============ 3-3 break / continue ============
     {
       id: '3-3',
       name: '逃生门',
-      xp: 45,
-      gold: 16,
+      xp: 48,
+      gold: 17,
       learn: {
         title: 'break 与 continue：循环里的两扇门',
         body: [
@@ -159,19 +153,11 @@ export const region3: RegionDef = {
       questions: [
         {
           kind: 'choice',
-          prompt: 'break 的作用是？',
-          options: ['跳过本轮，进入下一轮', '结束整个循环', '跳过所有循环', '暂停循环等用户输入'],
+          prompt: 'break 和 continue 的区别是？',
+          options: ['break 跳过本轮，continue 结束循环', 'break 结束整个循环，continue 只跳过本轮', '两者完全一样', 'break 只能用在 while 里'],
           answerIndex: 1,
-          hint: 'break 是"破门而出"——整个循环都不要了。',
-          explain: 'break 直接结束当前所在的整个循环，后面的轮次全部跳过。它和 continue 的区别是：break 退出循环，continue 只跳过这一轮。',
-        },
-        {
-          kind: 'choice',
-          prompt: 'continue 的作用是？',
-          options: ['结束整个循环', '跳过本轮剩余语句，进入下一轮', '结束程序', '回到循环开头重新执行本轮'],
-          answerIndex: 1,
-          hint: 'continue 是"这轮不算，下一个"。',
-          explain: 'continue 跳过本轮循环体里剩下的语句，直接进入下一轮——循环本身并没有结束。和 break 不同，break 是整个循环都不跑了。',
+          hint: '一个是"全退出"，一个是"跳过本轮"。',
+          explain: 'break 直接结束整个循环，后面的轮次全不跑；continue 只跳过本轮剩余语句，循环继续下一轮。两者都既可用于 for 也可用于 while。',
         },
         {
           kind: 'output',
@@ -183,55 +169,49 @@ export const region3: RegionDef = {
           explain: 'i 依次取 0、1、2、3。当 i 为 3 时 break 触发，循环立即结束——break 在 print(i) 之前执行，所以 3 没被打印。输出 0、1、2。',
         },
         {
+          kind: 'fill',
+          prompt: '补全关键字，让循环跳过 i 等于 2 的本轮：',
+          code: 'for i in range(5):\n    if i == 2:\n        ___\n    print(i)',
+          answers: ['continue'],
+          placeholder: '「跳过本轮」的关键字',
+          hint: '八个字母，意为「继续下一轮」。',
+          explain: 'continue 让本轮的 print(i) 被跳过，直接进入下一轮。所以输出 0、1、3、4（2 不出现）。和 break 不同，break 是整个循环退出。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面这段嵌套循环代码哪一行会引发问题？',
+          code: ['for i in range(3):', '    for j in range(3):', '        if j == 1:', '            continue', '        print(i, j)'],
+          answerLine: 3,
+          hint: 'continue 在这里想做的是退出循环吗？',
+          explain: '第 4 行 continue 只跳过本轮内层循环，不结束外层循环——结果内层 j 会反复跳过 j==1 的轮，外层 i 跑满 3 轮。',
+        },
+        {
           kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'for i in range(5):\n    if i == 2:\n        continue\n    print(i)',
-          options: ['0\n1\n3\n4', '0\n1\n2\n3\n4', '0\n1', '2'],
+          prompt: '执行后输出什么？',
+          code: 'for i in range(5):\n    if i % 2 == 0:\n        continue\n    print(i)',
+          options: ['1\n3', '0\n1\n2\n3\n4', '0\n2\n4', '1\n3\n5'],
           answerIndex: 0,
-          hint: 'i 等于 2 时跳过了什么？下一轮还在不在？',
-          explain: 'i 为 2 时 continue 触发，跳过本轮的 print(i)，直接进入下一轮。所以 2 没被打印，其余正常输出：0、1、3、4。',
-        },
-        {
-          kind: 'choice',
-          prompt: '下面这段嵌套循环里，break 会跳出几层？',
-          code: 'for i in range(3):\n    for j in range(3):\n        if j == 1:\n            break\n        print(i, j)',
-          options: ['只跳出内层循环', '跳出两层循环', '跳出整个程序', '什么都不做'],
-          answerIndex: 0,
-          hint: 'break 只管它所在的那一层循环。',
-          explain: 'break 只结束它所在的最近一层循环。内层的 break 退出内层 for，外层 for 照常继续——所以外层 i 会跑满 3 轮。',
-        },
-        {
-          kind: 'order',
-          prompt: '把这几行排成"遇到 3 就跳过"的正确顺序（注意缩进层级）：',
-          lines: ['for i in range(5):', '    if i == 3:', '        continue', '    print(i)'],
-          hint: '循环头在先，条件判断在循环体里，continue 在条件体里，print 在循环体里但不在条件里。',
-          explain: 'for 行是循环头，if 缩进一级在循环体里，continue 缩进两级在条件体里，print(i) 缩进一级在循环体但不在条件里。i 为 3 时 continue 跳过 print，其余正常输出。',
+          hint: 'i 是偶数时被跳过了，剩下的就是奇数。',
+          explain: 'i 为偶数（0、2、4）时 continue 触发，跳过本轮的 print(i)；i 为奇数（1、3）正常打印。所以输出 1、3。这是"过滤"模式：循环里加条件 + continue。',
         },
       ],
     },
+
+    // ============ 3-B Boss: 循环洞窟全线综合 ============
     {
       id: '3-B',
       name: '循环洞窟大测验',
-      xp: 100,
-      gold: 40,
+      xp: 120,
+      gold: 50,
       boss: true,
       learn: {
-        title: 'Boss 来了：循环洞窟全线复习',
+        title: 'Boss：循环洞窟全线复习',
         body: [
-          '这一关没有新知识，9 道题覆盖前三关的全部内容——for、range 三参数、while 计数器、break、continue、嵌套循环，五种题型轮番上阵。',
+          '这一关没有新知识。6 道题覆盖 for、range 三参数、while 计数器、break、continue、嵌套循环——答错会当场给解析，放心冲。',
           '全对零提示才能拿到 ★★★ 和完整战利品。整理好你的循环咒语，出发！',
         ],
       },
       questions: [
-        {
-          kind: 'choice',
-          prompt: '这段代码执行后 total 的值是？',
-          code: 'total = 0\nfor i in range(1, 4):\n    total += i',
-          options: ['6', '10', '3', '7'],
-          answerIndex: 0,
-          hint: 'range(1, 4) 生成哪几个数？全部加起来。',
-          explain: 'range(1, 4) 生成 1、2、3（含头不含尾）。total 从 0 开始，依次加 1、2、3：0+1=1，1+2=3，3+3=6。这就是"累加器"模式——用一个变量在循环里不断累加。',
-        },
         {
           kind: 'output',
           prompt: '这段代码运行后输出什么？',
@@ -242,13 +222,13 @@ export const region3: RegionDef = {
           explain: 'range(2, 10, 3) 从 2 出发，步长 3：2、5、8，下一个 11 超过 10 所以不包含。含头不含尾，步长决定跳跃幅度。',
         },
         {
-          kind: 'choice',
-          prompt: '这段代码会输出几行？',
-          code: 'for i in range(1, 7):\n    if i % 2 == 0:\n        print(i)',
-          options: ['3 行', '6 行', '2 行', '4 行'],
-          answerIndex: 0,
-          hint: 'range 里有几个数？其中几个是偶数？',
-          explain: 'range(1, 7) 生成 1 到 6 共 6 个数，但 print 只在偶数时执行。偶数有 2、4、6 三个，所以输出 3 行。这就是"过滤"模式：循环里加条件。',
+          kind: 'fill',
+          prompt: '补全累加器代码，让它算 1 到 100 的和（填一个函数名）：',
+          code: 'total = 0\nfor i in ___(1, 101):\n    total = total + i',
+          answers: ['range'],
+          placeholder: '生成一串数字的内建函数',
+          hint: '它能生成从 1 到 100 的整数序列（含头不含尾）。',
+          explain: 'range(1, 101) 生成 1 到 100，循环把每个数累加到 total。range 是 for 循环最经典的搭档——负责生成"要循环的数字"。',
         },
         {
           kind: 'bug',
@@ -257,22 +237,6 @@ export const region3: RegionDef = {
           answerLine: 1,
           hint: 'i 是什么类型？字符串能直接加它吗？',
           explain: '第 2 行 "第" + i 里 i 是整数（range 产生整数），字符串不能和整数相加，触发 TypeError。要写 f"第{i}关" 或 "第" + str(i) + "关"——这是循环里最常见的报错之一。',
-        },
-        {
-          kind: 'fill',
-          prompt: '补全累加器代码，让它算 1 到 100 的和（填一个函数名）：',
-          code: 'total = 0\nfor i in ___(1, 101):\n    total += i',
-          answers: ['range'],
-          placeholder: '生成一串数字的内建函数',
-          hint: '它能生成从 1 到 100 的整数序列（含头不含尾）。',
-          explain: 'range(1, 101) 生成 1 到 100，循环把每个数累加到 total。range 是 for 循环最经典的搭档——负责生成"要循环的数字"。',
-        },
-        {
-          kind: 'order',
-          prompt: '把这几行排成"只打印奇数"的正确顺序（注意缩进层级）：',
-          lines: ['for i in range(1, 6):', '    if i % 2 == 0:', '        continue', '    print(i)'],
-          hint: '偶数时 continue 跳过，奇数才打印。',
-          explain: 'for 行是循环头，if 缩进一级在循环体里，continue 缩进两级在条件体里，print(i) 缩进一级在循环体但不在条件里。i 为偶数时 continue 跳过 print，奇数正常输出 1、3、5。',
         },
         {
           kind: 'output',
@@ -285,11 +249,12 @@ export const region3: RegionDef = {
         },
         {
           kind: 'choice',
-          prompt: 'break 和 continue 的区别是？',
-          options: ['break 跳过本轮，continue 结束循环', 'break 结束整个循环，continue 只跳过本轮', '两者完全一样', 'break 只能用在 while 里'],
-          answerIndex: 1,
-          hint: '一个是"全退出"，一个是"跳过本轮"。',
-          explain: 'break 直接结束整个循环，后面的轮次全不跑；continue 只跳过本轮剩余语句，循环继续下一轮。两者都既可用于 for 也可用于 while。',
+          prompt: '下面这段嵌套循环里，break 会跳出几层？',
+          code: 'for i in range(3):\n    for j in range(3):\n        if j == 1:\n            break\n        print(i, j)',
+          options: ['只跳出内层循环', '跳出两层循环', '跳出整个程序', '什么都不做'],
+          answerIndex: 0,
+          hint: 'break 只管它所在的那一层循环。',
+          explain: 'break 只结束它所在的最近一层循环。内层的 break 退出内层 for，外层 for 照常继续——所以外层 i 会跑满 3 轮。',
         },
         {
           kind: 'output',
@@ -299,14 +264,6 @@ export const region3: RegionDef = {
           answerIndex: 0,
           hint: '外层每跑一轮，内层完整跑一遍。',
           explain: '外层 i 取 0 时，内层 j 跑 0、1；外层 i 取 1 时，内层 j 再跑 0、1。输出四行：0 0、0 1、1 0、1 1。嵌套循环的总次数 = 外层次数 × 内层次数。循环洞窟，通关！',
-        },
-        {
-          kind: 'bug',
-          prompt: '下面这段代码哪一行会报错？',
-          code: ['for i in range(3.5):', '    print(i)'],
-          answerLine: 0,
-          hint: 'range 的参数能是小数吗？',
-          explain: 'range 的参数必须是整数，传入 3.5（float）会抛 TypeError: "float" object cannot be interpreted as an integer。需要整数迭代时先 int(...) 转一下。',
         },
       ],
     },

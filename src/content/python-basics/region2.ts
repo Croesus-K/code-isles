@@ -1,16 +1,22 @@
 import type { RegionDef } from '../course'
 
-/** 区域 2：分支森林 */
+/**
+ * 区域 2：分支森林（高效入门版）
+ *
+ * 每关 4-5 题 = 1 选择 + 1 输出 + 1 填空 + 1 改错 (+ 可选 应用)，
+ * 螺旋复习 region1 的字符串与变量。
+ */
 export const region2: RegionDef = {
   id: '2',
   name: '分支森林',
   tagline: '每条岔路都是一次选择',
   levels: [
+    // ============ 2-1 布尔值与比较 ============
     {
       id: '2-1',
       name: '真假分叉路',
-      xp: 35,
-      gold: 12,
+      xp: 38,
+      gold: 13,
       learn: {
         title: '布尔值与比较：岔路口的指示牌',
         body: [
@@ -31,29 +37,12 @@ export const region2: RegionDef = {
         },
         {
           kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: '5 >= 5',
-          options: ['True', 'False', '5', '报错'],
-          answerIndex: 0,
-          hint: '>= 表示「大于等于」，包含了相等的情况。',
-          explain: '>= 是「大于等于」，5 确实等于 5，满足条件，结果为 True。比较运算符的结果一定是布尔值 True 或 False。',
-        },
-        {
-          kind: 'choice',
-          prompt: '执行 x = 5 之后，x == 5 的结果是？',
+          prompt: '执行后 result 是多少？',
           code: 'x = 5\nx == 5',
           options: ['True', 'False', '5', '报错'],
           answerIndex: 0,
           hint: '想想 = 和 == 分别是什么意思。',
           explain: 'x = 5 是赋值，把 5 放进 x；x == 5 是比较，问 x 是否等于 5。此时 x 就是 5，所以结果为 True。记住：单个 = 是赋值，两个 = 才是比较。',
-        },
-        {
-          kind: 'choice',
-          prompt: '"1" == 1 的结果是？',
-          options: ['True', 'False', '报错', '1'],
-          answerIndex: 1,
-          hint: '引号内外的世界并不相通。',
-          explain: '"1" 是字符串，1 是整数，类型不同。== 会先判断类型，类型不同直接返回 False，不会报错也不会自动转换。',
         },
         {
           kind: 'fill',
@@ -65,21 +54,31 @@ export const region2: RegionDef = {
           explain: '>= 表示「大于等于」。score = 75，75 >= 60 为 True。如果只用 > 就漏掉了恰好 60 分的情况。',
         },
         {
+          kind: 'bug',
+          prompt: '下面三行里，哪一行会报错？',
+          code: ['age = 18', 'if age = 18:', '    print("成年")'],
+          answerLine: 1,
+          hint: '条件里该用比较，还是赋值？',
+          explain: '第 2 行在 if 条件里用了单个 =（赋值），Python 不允许在 if 条件里赋值，会触发 SyntaxError。条件应该用 == 比较：if age == 18:。这是新手最经典的错误之一。',
+        },
+        {
           kind: 'output',
           prompt: '这段代码运行后输出什么？',
-          code: 'result = (3 > 8)\nresult',
-          options: ['True', 'False', '3', '报错'],
+          code: '"1" == 1',
+          options: ['True', 'False', '报错', '1'],
           answerIndex: 1,
-          hint: '先算括号里的比较，再把结果存进变量。',
-          explain: '3 > 8 为 False，这个布尔值被存进变量 result。布尔值可以像数字、字符串一样赋值给变量、参与运算。',
+          hint: '引号内外的世界并不相通。',
+          explain: '"1" 是字符串，1 是整数，类型不同。== 会先判断类型，类型不同直接返回 False，不会报错也不会自动转换。',
         },
       ],
     },
+
+    // ============ 2-2 if / elif / else ============
     {
       id: '2-2',
       name: '三岔口',
-      xp: 38,
-      gold: 13,
+      xp: 40,
+      gold: 14,
       learn: {
         title: 'if / elif / else：岔路口的路标',
         body: [
@@ -100,26 +99,16 @@ export const region2: RegionDef = {
           explain: 'gold = 99，条件 gold >= 100 不成立（99 < 100），走 else 分支，输出「还差一点」。if 不成立才会检查 elif，elif 也不成立才走 else。',
         },
         {
-          kind: 'choice',
-          prompt: '下面这段代码缺少了什么，导致会报语法错误？',
-          code: 'if age >= 18\n    print("成年")',
-          options: ['age 没赋值', 'if 后面少了冒号', 'print 拼错了', '缩进不够'],
-          answerIndex: 1,
-          hint: 'if 的条件写完了，还差一个标点。',
-          explain: 'if 语句的结尾必须有冒号 :，这是语法规定。正确写法是 if age >= 18:。少了冒号会直接 SyntaxError。',
-        },
-        {
-          kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'x = 7\nif x > 10:\n    print("大")\nelif x > 5:\n    print("中")\nelif x > 0:\n    print("小")',
-          options: ['大', '中', '小', '中和小'],
-          answerIndex: 1,
-          hint: 'elif 链只会命中第一个成立的分支。',
-          explain: 'x = 7：第一个条件 x > 10 不成立；第二个条件 x > 5 成立，输出「中」并跳出整条链。第三个 x > 0 虽然也成立，但 elif 命中第一个后就不再检查了。',
+          kind: 'bug',
+          prompt: '下面哪一行会报错？',
+          code: ['if age >= 18', '    print("成年")'],
+          answerLine: 0,
+          hint: 'if 条件写完后还差什么标点？',
+          explain: '第 1 行：if 语句的条件后必须有冒号 :，漏掉会触发 SyntaxError。正确写法是 if age >= 18:。少了冒号连第 2 行的 print 都没机会执行。',
         },
         {
           kind: 'fill',
-          prompt: '补全关键字，让分数 50 分时输出「加油」（填一个关键字）：',
+          prompt: '补全关键字，让分数 50 分时输出「加油」：',
           code: 'score = 50\nif score >= 60:\n    print("及格")\n___:\n    print("加油")',
           answers: ['else'],
           placeholder: '四个字母的关键字',
@@ -134,20 +123,23 @@ export const region2: RegionDef = {
           explain: 'if 语句的结构：先写 if 和条件及冒号，然后缩进写条件成立时执行的代码，最后是 else: 及其缩进代码。顺序不能乱。',
         },
         {
-          kind: 'choice',
-          prompt: 'print("你好") 会做什么？',
-          options: ['把「你好」存进变量', '在屏幕上显示「你好」', '比较两个值是否相等', '什么都不做'],
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'x = 7\nif x > 10:\n    print("大")\nelif x > 5:\n    print("中")\nelif x > 0:\n    print("小")',
+          options: ['大', '中', '小', '中和小'],
           answerIndex: 1,
-          hint: 'print 的英文意思就是「打印」。',
-          explain: 'print() 是 Python 最基本的输出函数，把括号里的内容打印到屏幕上。它不返回值、不存变量，就是「让玩家看见」。',
+          hint: 'elif 链只会命中第一个成立的分支。',
+          explain: 'x = 7：第一个条件 x > 10 不成立；第二个条件 x > 5 成立，输出「中」并跳出整条链。第三个 x > 0 虽然也成立，但 elif 命中第一个后就不再检查了。',
         },
       ],
     },
+
+    // ============ 2-3 and / or / not ============
     {
       id: '2-3',
       name: '咒语组合',
-      xp: 40,
-      gold: 14,
+      xp: 42,
+      gold: 15,
       learn: {
         title: 'and / or / not：组合你的条件咒语',
         body: [
@@ -166,23 +158,6 @@ export const region2: RegionDef = {
           answerIndex: 1,
           hint: 'and 要求两边都为真。',
           explain: 'and 是「并且」：两边都是 True 才返回 True。这里 False 拖了后腿，结果是 False。',
-        },
-        {
-          kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'True or False',
-          options: ['True', 'False', '报错', 'None'],
-          answerIndex: 0,
-          hint: 'or 只要有一边为真就够了。',
-          explain: 'or 是「或者」：只要有一边是 True 就返回 True。左边已经是 True，无需再看右边。',
-        },
-        {
-          kind: 'choice',
-          prompt: 'not True 的结果是？',
-          options: ['True', 'False', '报错', '0'],
-          answerIndex: 1,
-          hint: 'not 的作用是「反转」。',
-          explain: 'not 把布尔值翻转：not True 得 False，not False 得 True。就像咒语里的「否定术」。',
         },
         {
           kind: 'fill',
@@ -209,38 +184,49 @@ export const region2: RegionDef = {
           hint: 'not 先算，or 后算。',
           explain: '优先级：not 最高，or 最低。先算 not True = False，再算 False or True = True。拿不准就加括号：(not True) or True，一目了然。',
         },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'a = 10\nb = 20\na > b or a < b',
+          options: ['True', 'False', '报错', '10'],
+          answerIndex: 0,
+          hint: '把两个比较分别算出来，再看 or。',
+          explain: 'a > b 为 False（10 不大于 20），a < b 为 True。False or True = True。or 只要一边成立就为 True。',
+        },
       ],
     },
+
+    // ============ 2-B Boss: 分支森林全线综合 ============
     {
       id: '2-B',
       name: '分支森林大测验',
-      xp: 90,
-      gold: 35,
+      xp: 110,
+      gold: 45,
       boss: true,
       learn: {
-        title: 'Boss 来了：森林全线复习',
+        title: 'Boss：分支森林全线复习',
         body: [
-          '这一关没有新知识，9 道题覆盖布尔值、比较运算符、if/elif/else 和逻辑运算，五种题型轮番上阵——答错会当场给解析，放心冲。',
+          '这一关没有新知识。6 道题覆盖布尔值、比较运算符、if/elif/else 和逻辑运算——答错会当场给解析，放心冲。',
           '全对零提示才能拿到 ★★★ 和完整战利品。森林的岔路已全部铺好，出发！',
         ],
       },
       questions: [
         {
-          kind: 'choice',
+          kind: 'output',
           prompt: '7 != 7 的结果是？',
+          code: '7 != 7',
           options: ['True', 'False', '7', '报错'],
           answerIndex: 1,
           hint: '!= 问的是「不相等」。',
           explain: '!= 是「不等于」。7 当然等于 7，所以「7 不等于 7」为 False。',
         },
         {
-          kind: 'output',
-          prompt: '这段代码运行后输出什么？',
-          code: 'level = 3\nif level >= 5:\n    print("高手")\nelif level >= 1:\n    print("新手")\nelse:\n    print("未入门")',
-          options: ['高手', '新手', '未入门', '什么都不输出'],
-          answerIndex: 1,
-          hint: '从上往下，找到第一个成立的分支就停。',
-          explain: 'level = 3：第一个条件 level >= 5 不成立；第二个 level >= 1 成立，输出「新手」并跳出。else 不再执行。',
+          kind: 'bug',
+          prompt: '下面三行里，哪一行会导致报错？',
+          code: ['hp = 100', 'if hp > 0 AND hp < 200:', '    print("正常")'],
+          answerLine: 1,
+          hint: 'Python 的逻辑运算符是小写的三个单词。',
+          explain: '第 2 行用了大写 AND，Python 不认识大写 AND（只有小写 and 才是逻辑运算符），会触发语法错误。正确写法：if hp > 0 and hp < 200:。',
         },
         {
           kind: 'fill',
@@ -252,44 +238,13 @@ export const region2: RegionDef = {
           explain: 'if 是最基本的条件判断关键字。hp = 0，条件 hp <= 0 成立，输出「倒下」。',
         },
         {
-          kind: 'order',
-          prompt: '把这几行排成一条完整的 if-elif-else 结构（缩进已标好）：',
-          lines: ['if score >= 90:', '    print("优秀")', 'elif score >= 60:', '    print("及格")', 'else:', '    print("加油")'],
-          hint: 'if 打头，elif 居中，else 收尾。',
-          explain: 'if-elif-else 的顺序：先 if 及其条件，再 elif 及其条件，最后 else 兜底。每条分支后跟缩进的执行语句。',
-        },
-        {
-          kind: 'bug',
-          prompt: '下面三行里，哪一行会导致报错？',
-          code: ['age = 18', 'if age = 18:', '    print("成年")'],
-          answerLine: 1,
-          hint: '条件里该用比较，还是赋值？',
-          explain: '第 2 行在 if 条件里用了单个 =（赋值），Python 不允许在 if 条件里赋值，会触发 SyntaxError。条件应该用 == 比较：if age == 18:。这是新手最经典的错误之一。',
-        },
-        {
-          kind: 'choice',
-          prompt: 'False or False or True 的结果是？',
-          options: ['True', 'False', '报错', 'None'],
-          answerIndex: 0,
-          hint: 'or 链从左往右算，只要有一个 True…',
-          explain: 'or 是「或者」：只要有一个 True 就为 True。前两个 False 不影响，第三个 True 让整个表达式为 True。',
-        },
-        {
           kind: 'output',
           prompt: '这段代码运行后输出什么？',
-          code: 'a = 10\nb = 20\na > b or a < b',
-          options: ['True', 'False', '报错', '10'],
-          answerIndex: 0,
-          hint: '把两个比较分别算出来，再看 or。',
-          explain: 'a > b 为 False（10 不大于 20），a < b 为 True。False or True = True。or 只要一边成立就为 True。',
-        },
-        {
-          kind: 'bug',
-          prompt: '下面三行里，哪一行会导致报错？',
-          code: ['hp = 100', 'if hp > 0 AND hp < 200:', '    print("正常")'],
-          answerLine: 1,
-          hint: 'Python 的逻辑运算符是小写的三个单词。',
-          explain: '第 2 行用了大写 AND，Python 不认识大写 AND（只有小写 and 才是逻辑运算符），会触发语法错误。正确写法：if hp > 0 and hp < 200:。',
+          code: 'level = 3\nif level >= 5:\n    print("高手")\nelif level >= 1:\n    print("新手")\nelse:\n    print("未入门")',
+          options: ['高手', '新手', '未入门', '什么都不输出'],
+          answerIndex: 1,
+          hint: '从上往下，找到第一个成立的分支就停。',
+          explain: 'level = 3：第一个条件 level >= 5 不成立；第二个 level >= 1 成立，输出「新手」并跳出。else 不再执行。',
         },
         {
           kind: 'choice',
@@ -300,12 +255,13 @@ export const region2: RegionDef = {
           explain: 'if 可以单独使用，不需要 elif 和 else。但 elif 和 else 不能单独出现，必须跟在 if 后面。if 和 else 末尾都要冒号；else 不需要写条件。',
         },
         {
-          kind: 'bug',
-          prompt: '下面这段代码哪一行会报错？',
-          code: ['if 5 > 3', '    print("yes")'],
-          answerLine: 0,
-          hint: 'if 那行末尾有个东西漏写了。',
-          explain: 'if 行末尾必须有冒号，写成 if 5 > 3 漏了冒号，Python 会抛 SyntaxError: expected ":"。冒号是「条件结束、下一步开始」的信号，if/elif/else/for/while/def 后面全都要冒号。',
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'False or False or True',
+          options: ['True', 'False', '报错', 'None'],
+          answerIndex: 0,
+          hint: 'or 链从左往右算，只要有一个 True…',
+          explain: 'or 是「或者」：只要有一个 True 就为 True。前两个 False 不影响，第三个 True 让整个表达式为 True。森林已踏平，胜利就在前方！',
         },
       ],
     },

@@ -30,8 +30,9 @@ describe('课程内容完整性', () => {
    * 题量策略：「高效入门」节奏。
    * - 普通关 3~9 题（少而精：每关只教 1 个核心概念，题目宁少勿滥）
    * - Boss 关 ≥ 4 题（综合实战题，不靠堆量）
+   * - 每关至少 1 道填空（fill） + 1 道改错（bug）→ 强制加入「写代码」训练
    * 设计权衡：原本是"普通关 4-9 / Boss ≥ 8"，导致新手在前 3 关就答 20+ 题选择题，
-   * 容易疲劳。新版每关控制在 3-4 道（含实战 + Bug 题型），让新手更快进入下一关。
+   * 容易疲劳。新版每关控制在 3-5 道（含实战 + Bug 题型），让新手更快进入下一关。
    */
   it('题量：普通关 3~9 题，Boss ≥ 4 题', () => {
     for (const r of regions) {
@@ -43,6 +44,17 @@ describe('课程内容完整性', () => {
           expect(n, `${l.id} 题量下限`).toBeGreaterThanOrEqual(3)
           expect(n, `${l.id} 题量上限`).toBeLessThanOrEqual(9)
         }
+      }
+    }
+  })
+
+  it('每关至少 1 道填空 + 1 道改错（强制代码题训练）', () => {
+    for (const r of regions) {
+      for (const l of r.levels) {
+        const fills = l.questions.filter((q) => q.kind === 'fill').length
+        const bugs = l.questions.filter((q) => q.kind === 'bug').length
+        expect(fills, `${l.id} 至少 1 道填空`).toBeGreaterThanOrEqual(1)
+        expect(bugs, `${l.id} 至少 1 道改错`).toBeGreaterThanOrEqual(1)
       }
     }
   })
