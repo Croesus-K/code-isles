@@ -1424,3 +1424,24 @@ body {
 .progress__fill--done {
   background: linear-gradient(to right, var(--c-gold), #f5d76e);
 }
+
+/* --- 快捷键提示 --- */
+.shortcut-hint {
+  font-size: 11px;
+  color: var(--c-ink-2);
+  text-align: center;
+  margin: 10px 0 0;
+}
+.shortcut-hint kbd {
+  display: inline-block;
+  background: var(--c-ink);
+  color: var(--c-parchment);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  font-weight: bold;
+  padding: 1px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--c-ink-2);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+  margin: 0 2px;
+}

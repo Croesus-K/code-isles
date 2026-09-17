@@ -63,6 +63,11 @@ interface GameStore {
   clearWrongAnswers: () => void
   /** 批量追加错题记录（导入流程用），已存在的 questionKey 跳过不去重。返回新增数。 */
   appendWrongAnswers: (records: readonly WrongAnswerRecord[]) => number
+  /**
+   * 主动把题目加入复习队列（用户快捷键）。不影响日统计 'wrong'。
+   * 已存在：+1 attempts + 更新 wrongAt。返回更新后的 attempts。
+   */
+  addToReviewQueue: (questionKey: string) => number
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -190,6 +195,23 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (fresh.length === 0) return 0
       commit({ ...cur, wrongAnswers: [...cur.wrongAnswers, ...fresh] })
       return fresh.length
+    },
+    addToReviewQueue: (questionKey) => {
+      const cur = get().save
+      const idx = cur.wrongAnswers.findIndex((w) => w.questionKey === questionKey)
+      const now = new Date().toISOString()
+      if (idx >= 0) {
+        const existing = cur.wrongAnswers[idx]
+        const updated = [...cur.wrongAnswers]
+        updated[idx] = { ...existing, attempts: existing.attempts + 1, wrongAt: now }
+        commit({ ...cur, wrongAnswers: updated })
+        return updated[idx].attempts
+      }
+      commit({
+        ...cur,
+        wrongAnswers: [...cur.wrongAnswers, { questionKey, wrongAt: now, attempts: 1 }],
+      })
+      return 1
     },
   }
 })
