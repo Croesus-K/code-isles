@@ -140,9 +140,10 @@ export default function App() {
 
   // 课程切换：进行中的关卡/区域回退到新课程的世界地图（title 场景原地不动）
   const onSelectCourse = (id: string) => {
+    const next = getCourse(id)
     setCourseId(id)
     setScene((s) => (s.name === 'title' ? s : { name: 'world' }))
-    setStatus(`已切换到「${getCourse(id).title}」。`)
+    setStatus(`已切换到「${next.lang ?? next.title}」。`)
   }
 
   const corruptNotice = corruptDetected ? (
