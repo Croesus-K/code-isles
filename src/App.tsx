@@ -205,10 +205,8 @@ export default function App() {
         {updateBanner}
         {corruptNotice}
         <MainMenu
-          activeCourse={course}
           save={save}
           hasSave={hasSave}
-          onSelectCourse={onSelectCourse}
           onStart={() => setScene({ name: 'world' })}
           onProfile={() => setScene({ name: 'profile' })}
           onReview={() => setScene({ name: 'review' })}
