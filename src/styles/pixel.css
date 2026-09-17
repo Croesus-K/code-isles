@@ -1706,6 +1706,103 @@ body {
   color: var(--c-danger);
 }
 
+/* --- 综合挑战模式 --- */
+.challenge-banner .pixel-panel__title {
+  background: var(--c-accent-2);
+  color: var(--c-ink);
+}
+
+.challenge-banner__text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 0 0 6px;
+}
+
+.challenge-banner__text strong {
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+.challenge-banner__source {
+  font-size: 12px;
+  color: var(--c-ink-2);
+  margin: 0;
+}
+
+.challenge-banner__source strong {
+  color: var(--c-accent-2);
+  font-weight: 700;
+}
+
+.challenge-skip {
+  margin-top: 12px;
+  gap: 12px;
+}
+
+.challenge-empty {
+  text-align: center;
+}
+
+.challenge-empty__text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 0 0 16px;
+}
+
+.challenge-result {
+  text-align: center;
+}
+
+.challenge-result__big {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-accent);
+  margin: 0 0 12px;
+}
+
+.challenge-result__stats {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.challenge-result__stats .ok {
+  color: var(--c-success);
+  font-weight: 700;
+}
+
+.challenge-result__stats .bad {
+  color: var(--c-danger);
+  font-weight: 700;
+}
+
+.challenge-result__xp {
+  font-size: 16px;
+  margin: 0 0 16px;
+  color: var(--c-ink);
+}
+
+.challenge-result__xp .gold {
+  color: var(--c-gold);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.challenge-cta {
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.challenge-cta__text {
+  flex: 1 1 280px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+}
+
 /* --- 离线模式横幅 --- */
 .offline-banner .pixel-panel__title {
   background: var(--c-ink-2);

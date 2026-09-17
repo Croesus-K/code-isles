@@ -6,7 +6,7 @@ import { CloudSyncPanel } from './CloudSyncPanel'
 
 export interface SideMenuProps {
   /** 当前场景名（用于高亮入口 + 导航时决定是否重置到 world） */
-  sceneName: 'title' | 'world' | 'region' | 'level' | 'profile' | 'review'
+  sceneName: 'title' | 'world' | 'region' | 'level' | 'profile' | 'review' | 'challenge'
   activeCourse: CourseDef
   save: SaveData
   /** 课程切换：menu 换课后通知 App 重置场景到新课程的 world（或留在 title） */

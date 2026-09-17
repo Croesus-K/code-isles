@@ -10,6 +10,7 @@ import {
 } from './core/notifications'
 import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse } from './content/courses'
 import { AnnouncePanel } from './ui/AnnouncePanel'
+import { ChallengeView } from './ui/ChallengeView'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
 import { MainMenu } from './ui/MainMenu'
@@ -21,6 +22,7 @@ import { ReviewSessionView } from './ui/ReviewSessionView'
 import { SideMenu } from './ui/SideMenu'
 import { WorldMap } from './ui/WorldMap'
 import { XpBar } from './ui/XpBar'
+import { challengePoolSize } from './core/challenge-queue'
 
 type Scene =
   | { name: 'title' }
@@ -29,6 +31,7 @@ type Scene =
   | { name: 'level'; regionIndex: number; levelIndex: number }
   | { name: 'profile' }
   | { name: 'review'; focusQuestionKey?: string }
+  | { name: 'challenge' }
 
 function readCoursePref(): string {
   try {
@@ -287,6 +290,11 @@ export default function App() {
               save={save}
               onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
               onOpenProfile={() => setScene({ name: 'profile' })}
+              onStartChallenge={
+                challengePoolSize(save, course) > 0
+                  ? () => setScene({ name: 'challenge' })
+                  : undefined
+              }
             />
             {statusLine}
           </>
@@ -327,6 +335,14 @@ export default function App() {
             regionId={course.regions[scene.regionIndex].id}
             level={course.regions[scene.regionIndex].levels[scene.levelIndex]}
             onBack={() => setScene({ name: 'region', regionIndex: scene.regionIndex })}
+          />
+        )}
+
+        {scene.name === 'challenge' && (
+          <ChallengeView
+            course={course}
+            save={save}
+            onExit={() => setScene({ name: 'world' })}
           />
         )}
 

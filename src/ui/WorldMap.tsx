@@ -15,9 +15,11 @@ interface Props {
   save: SaveData
   onEnter: (regionIndex: number) => void
   onOpenProfile: () => void
+  /** 已通关任意关卡时显示"综合挑战"入口；未通关则不传 */
+  onStartChallenge?: () => void
 }
 
-export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
+export function WorldMap({ course, save, onEnter, onOpenProfile, onStartChallenge }: Props) {
   const wrongList = save.wrongAnswers ?? []
   const wrongCount = wrongList.length
   // 总答错次数 = attempts 求和，让"反复卡住的题"更显眼
@@ -178,6 +180,27 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
           })}
         </div>
       </PixelPanel>
+
+      {onStartChallenge && (
+        <PixelPanel title="🏆 综合挑战">
+          <div className="row row--center challenge-cta">
+            <span className="challenge-cta__text">
+              通关关卡后的「题目复盘」入口 —— 从已学题目里随机抽 10 道来战。
+              答对 +2 XP，答错不影响错题本。
+            </span>
+            <PixelButton
+              variant="primary"
+              onClick={() => {
+                audio.play('click')
+                onStartChallenge()
+              }}
+            >
+              开始挑战
+            </PixelButton>
+          </div>
+        </PixelPanel>
+      )}
+
       <Toast message={toast} />
     </>
   )
