@@ -736,6 +736,16 @@ body {
   border-left: 4px solid var(--c-gold);
 }
 
+/* 主菜单是深海底色，原羊皮纸内的暗字状态条看不见 → 面板底色 + 亮字变体 */
+.mainmenu-screen .status-line {
+  margin: 0;
+  color: var(--c-white);
+  background: rgba(31, 45, 66, 0.85);
+  border: 2px solid rgba(253, 251, 245, 0.25);
+  border-left: 4px solid var(--c-gold);
+  padding: 8px 14px;
+}
+
 .footnote {
   text-align: center;
   color: #6d7c96;
