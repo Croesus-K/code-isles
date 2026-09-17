@@ -4,6 +4,11 @@ import { pythonBasics } from './content/python-basics'
 import { audio } from './core/audio'
 import { useGameStore } from './core/store'
 import { applyUpdate, subscribeSw } from './core/serviceWorker'
+import {
+  fireWrongBookReminder,
+  requestNotificationPermission,
+  shouldNotifyToday,
+} from './core/notifications'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
 import { PixelButton } from './ui/PixelButton'
@@ -55,6 +60,24 @@ export default function App() {
   useEffect(() => {
     if (scene.name === 'profile') syncBadges(pythonBasics)
   }, [scene.name, syncBadges])
+
+  // 进入 WorldMap 时，如已有错题且今日未提醒 → 主动请求权限 + 发一次通知
+  // 注意：仅在 world scene 触发，不在 game scene 打断玩家
+  useEffect(() => {
+    if (scene.name !== 'world') return
+    const wrongCount = (save.wrongAnswers ?? []).length
+    if (wrongCount === 0) return
+    if (shouldNotifyToday()) {
+      // 已授权 + 今日未提醒 → 直接发
+      fireWrongBookReminder(wrongCount)
+    } else if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      // 未授权 → 异步请求一次（用户拒绝则不再追问）
+      requestNotificationPermission().then((perm) => {
+        if (perm === 'granted') fireWrongBookReminder(wrongCount)
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.name])
 
   const download = () => {
     audio.play('click')
