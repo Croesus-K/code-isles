@@ -582,6 +582,27 @@ body {
   margin: 0;
 }
 
+.kbd-hint {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  border: 2px solid var(--c-ink);
+  border-radius: 2px;
+  padding: 0 4px;
+  margin: 0 2px;
+  background: var(--c-parchment);
+  color: var(--c-ink);
+}
+
+.seq-line__no {
+  display: inline-block;
+  min-width: 22px;
+  text-align: right;
+  font-weight: bold;
+  color: var(--c-ink-2);
+  margin-right: 6px;
+}
+
 .pixel-btn.seq-line {
   display: flex;
   width: 100%;

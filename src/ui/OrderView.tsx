@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { OrderQuestion } from '../content/course'
 import { HintButton } from './HintButton'
 import { PixelButton } from './PixelButton'
@@ -50,12 +50,55 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
     onAnswer(correct)
   }
 
+  // 键盘可达性：
+  // - 未提交：1~N 把 pool 第 N 行放入 placed；Backspace 撤回最后一行；R 重置（重新洗牌 + 清空已放）
+  // - 已提交：Enter 进入下一题
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return
+      }
+      if (submitted) {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          onNext()
+        }
+        return
+      }
+      if (e.key === 'Backspace' && placed.length > 0) {
+        e.preventDefault()
+        unplace(placed.length - 1)
+        return
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        if (placed.length === 0 && pool.length === question.lines.length) return
+        e.preventDefault()
+        setPlaced([])
+        setPool(shuffled(question.lines))
+        return
+      }
+      const num = Number.parseInt(e.key, 10)
+      if (!Number.isNaN(num) && num >= 1 && num <= pool.length) {
+        e.preventDefault()
+        place(pool[num - 1])
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, pool, placed, question.lines, onNext])
+
   return (
     <div>
       <p className="q-prompt">{question.prompt}</p>
       {!submitted ? (
         <>
-          <p className="order-label">你的顺序（点击某行可撤回）：</p>
+          <p className="order-label">
+            你的顺序（点击某行可撤回） ·{' '}
+            <kbd className="kbd-hint">1~N</kbd> 加入 · <kbd className="kbd-hint">⌫</kbd> 撤回 ·{' '}
+            <kbd className="kbd-hint">R</kbd> 重置
+          </p>
           <div className="order-seq">
             {placed.map((line, i) => (
               <PixelButton key={`${line}-${i}`} className="seq-line seq-line--placed" onClick={() => unplace(i)}>
@@ -66,9 +109,14 @@ export function OrderView({ question, isLast, onAnswer, onHintUsed, onNext }: Pr
           </div>
           <p className="order-label">待选行：</p>
           <div className="order-pool">
-            {pool.map((line) => (
-              <PixelButton key={line} className="seq-line" onClick={() => place(line)}>
-                {line}
+            {pool.map((line, i) => (
+              <PixelButton
+                key={line}
+                className="seq-line"
+                onClick={() => place(line)}
+                aria-keyshortcuts={String(i + 1)}
+              >
+                <span className="seq-line__no">{i + 1}</span> {line}
               </PixelButton>
             ))}
           </div>
