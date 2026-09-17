@@ -17,10 +17,12 @@ export type StringKey =
   | 'tagline.adventurer'
   // --- WorldMap ---
   | 'panel.worldMap'
+  | 'panel.progress'
   | 'panel.wrongbook'
   | 'panel.stats'
   | 'label.wrongCount'
   | 'label.totalAttempts'
+  | 'label.cleared'
   | 'stats.barTip'
   | 'stats.empty'
   | 'toast.copied'
@@ -144,10 +146,12 @@ const zhCN = {
 
   // --- WorldMap ---
   'panel.worldMap': '世界地图',
+  'panel.progress': '🗺️ 探索进度',
   'panel.wrongbook': '📒 错题本',
   'panel.stats': '📊 学习统计 · 最近 7 天',
   'label.wrongCount': '{n} 道题待巩固',
   'label.totalAttempts': '（累计答错 {n} 次）',
+  'label.cleared': '已通关 {cleared} / {total} 关',
   'stats.barTip': '{date} · 答对 {correct} 答错 {wrong} · 通关 {cleared}',
   'stats.empty': '还没有活动记录——去通关一关，统计就开始生长 ✨',
   'toast.copied': '✓ 已复制到剪贴板',

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CourseDef } from '../content/course'
-import { clearedCount, isRegionUnlocked } from '../core/progress'
+import { clearedCount, isRegionUnlocked, levelCleared } from '../core/progress'
 import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
 import { copyTextToClipboard } from '../core/clipboard'
@@ -47,12 +47,49 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
     setToast(ok ? t('toast.copied') : t('toast.copyFail'))
   }
 
+  // 全局通关进度：所有非 comingSoon 关卡中已通关的比例。
+  // comingSoon 的关卡不计入分母——课程没出完，进度会"卡住"看起来很难看。
+  const playableLevels = course.regions
+    .filter((r) => !r.comingSoon)
+    .flatMap((r) => r.levels)
+  const totalLevels = playableLevels.length
+  const cleared = playableLevels.filter((lv) => {
+    // playableLevels 来自 region.flatMap；找不到 region 时 fallback false
+    const regionId = course.regions.find((r) => r.levels.some((l) => l.id === lv.id))?.id
+    return regionId ? levelCleared(save, regionId, lv.id) : false
+  }).length
+  const progressPct = totalLevels === 0 ? 0 : Math.round((cleared / totalLevels) * 100)
+
   return (
     <>
       <header className="title-block">
         <h1 className="game-logo game-logo--small">{course.title}</h1>
         <p className="game-tagline">{course.subtitle}</p>
       </header>
+
+      <PixelPanel title={t('panel.progress')}>
+        <div className="progress">
+          <div className="progress__meta">
+            <span className="progress__count">
+              {t('label.cleared', { cleared, total: totalLevels })}
+            </span>
+            <span className="progress__pct">{progressPct}%</span>
+          </div>
+          <div
+            className="progress__bar"
+            role="progressbar"
+            aria-valuenow={progressPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={t('label.cleared', { cleared, total: totalLevels })}
+          >
+            <div
+              className={`progress__fill ${progressPct >= 100 ? 'progress__fill--done' : ''}`}
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+      </PixelPanel>
 
       {wrongCount > 0 && (
         <PixelPanel title={t('panel.wrongbook')}>
