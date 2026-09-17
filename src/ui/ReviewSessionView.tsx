@@ -131,6 +131,8 @@ export function ReviewSessionView({ course, save, onExit, focusQuestionKey }: Pr
           </PixelPanel>
           <PixelPanel title={current.question.kind === 'fill' ? '代码填空' : '知识挑战'}>
             <QuizQuestion
+              // 同 LevelView：换题必须重挂载，避免上一题作答状态泄漏
+              key={current.questionKey}
               question={current.question}
               index={index}
               total={total}

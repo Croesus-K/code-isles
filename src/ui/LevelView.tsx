@@ -144,6 +144,9 @@ export function LevelView({ regionId, level, onBack }: Props) {
       {phase === 'quiz' && (
         <PixelPanel title={level.boss ? '⚔ Boss 挑战' : '知识挑战'}>
           <QuizQuestion
+            // key 强制换题时重挂载：清掉选项选中态/解释/提示/填空输入等内部 state，
+            // 否则上一题的作答状态会泄漏进下一题（跳题还可能被误判为答对）
+            key={`${regionId}:${level.id}:${qIndex}`}
             question={level.questions[qIndex]}
             index={qIndex}
             total={level.questions.length}
