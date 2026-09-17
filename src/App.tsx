@@ -60,6 +60,13 @@ export default function App() {
 
   const course = getCourse(courseId)
 
+  // 状态条 4 秒后自动回落默认文案 —— 一次性提示（导出成功/切课等）不该永久驻留
+  useEffect(() => {
+    if (status === '欢迎来到群岛。') return
+    const t = setTimeout(() => setStatus('欢迎来到群岛。'), 4000)
+    return () => clearTimeout(t)
+  }, [status])
+
   // 课程选择持久化（独立于存档：换课不清进度，也不随存档导出）
   useEffect(() => {
     try {

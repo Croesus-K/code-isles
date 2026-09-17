@@ -9,7 +9,7 @@ import { region5 } from './region5'
 export const pythonBasics: CourseDef = {
   id: 'python-basics',
   title: '代码群岛',
-  subtitle: 'Code Isles · 用像素冒险学正经知识 · 首期课程：Python 基础',
+  subtitle: 'Python 入门：变量、循环、函数与基础语法',
   lang: 'Python',
   regions: [region1, region2, region3, region4, region5],
 }

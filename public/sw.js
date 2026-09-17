@@ -12,7 +12,8 @@
  * 不引入 Workbox 是为了让 SW 逻辑保持可读（<100 行）且零依赖。
  */
 /* eslint-disable no-restricted-globals */
-const CACHE_VERSION = 'code-isles-v1'
+// 更新部署时必须 bump：activate 靠"版本名不同"清理旧缓存，同名永不清理
+const CACHE_VERSION = 'code-isles-v2'
 const APP_SHELL = [
   './',
   './index.html',
@@ -49,8 +50,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url)
   if (url.origin !== self.location.origin) return
 
-  // SPA navigation：网络优先，失败回退到缓存的 index.html
-  if (req.mode === 'navigate') {
+  // SPA navigation + index.html 壳（含 PJAX/预取等非 navigate 拉取）：一律网络优先，
+  // 失败才回退缓存 —— 部署新版后绝不能让旧壳把旧 hash 的 JS/CSS 再带回来
+  const isHtmlShell =
+    req.mode === 'navigate' ||
+    url.pathname.endsWith('/') ||
+    url.pathname.endsWith('/index.html')
+  if (isHtmlShell) {
     event.respondWith(
       fetch(req)
         .then((res) => {
