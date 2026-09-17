@@ -25,6 +25,15 @@ export type StringKey =
   | 'stats.empty'
   | 'toast.copied'
   | 'toast.copyFail'
+  | 'toast.imported'
+  | 'toast.importEmpty'
+  | 'panel.import'
+  | 'import.placeholder'
+  | 'import.btn.parse'
+  | 'import.btn.cancel'
+  | 'import.hint'
+  | 'import.result'
+  | 'import.unrecognized'
   | 'btn.review'
   | 'btn.export'
   | 'btn.copy'
@@ -143,6 +152,15 @@ const zhCN = {
   'stats.empty': '还没有活动记录——去通关一关，统计就开始生长 ✨',
   'toast.copied': '✓ 已复制到剪贴板',
   'toast.copyFail': '复制失败，请改用「导出」按钮',
+  'toast.imported': '✓ 导入 {added} 条 · 跳过 {skipped} 条 · 未识别 {unrecognized} 条',
+  'toast.importEmpty': '没识别到任何错题条目',
+  'panel.import': '📥 导入错题本',
+  'import.placeholder': '把 Markdown 清单粘到这里…',
+  'import.btn.parse': '解析导入',
+  'import.btn.cancel': '取消',
+  'import.hint': '支持「导出错题清单」生成的格式；按 region · level · prompt 前 40 字反查',
+  'import.result': '成功 {added} 条 · 跳过 {skipped} 条 · 未识别 {unrecognized} 条',
+  'import.unrecognized': '未识别样例：{samples}',
   'btn.review': '📘 复习',
   'btn.export': '📄 导出',
   'btn.copy': '📋 复制',

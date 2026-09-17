@@ -1327,3 +1327,34 @@ body {
     opacity: 1;
   }
 }
+
+/* --- 错题本导入 --- */
+.import-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.import-area__textarea {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px;
+  background: var(--c-parchment);
+  border: 2px solid var(--c-ink-2);
+  border-radius: 3px;
+  color: var(--c-ink);
+  resize: vertical;
+  min-height: 160px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.import-area__textarea:focus {
+  outline: none;
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 2px rgba(255, 200, 80, 0.3);
+}
+.muted.small {
+  color: var(--c-ink-2);
+  font-size: 11px;
+  margin: 0 0 8px;
+}

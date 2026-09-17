@@ -61,6 +61,8 @@ interface GameStore {
   removeFromWrongAnswers: (questionKey: string) => void
   /** 清空错题本（用户主动操作）。 */
   clearWrongAnswers: () => void
+  /** 批量追加错题记录（导入流程用），已存在的 questionKey 跳过不去重。返回新增数。 */
+  appendWrongAnswers: (records: readonly WrongAnswerRecord[]) => number
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -179,6 +181,15 @@ export const useGameStore = create<GameStore>()((set, get) => {
       const cur = get().save
       if ((cur.wrongAnswers ?? []).length === 0) return
       commit({ ...cur, wrongAnswers: [] })
+    },
+    appendWrongAnswers: (records) => {
+      if (records.length === 0) return 0
+      const cur = get().save
+      const existing = new Set(cur.wrongAnswers.map((w) => w.questionKey))
+      const fresh = records.filter((r) => !existing.has(r.questionKey))
+      if (fresh.length === 0) return 0
+      commit({ ...cur, wrongAnswers: [...cur.wrongAnswers, ...fresh] })
+      return fresh.length
     },
   }
 })

@@ -7,6 +7,7 @@ import { useGameStore } from '../core/store'
 import { audio } from '../core/audio'
 import { copyTextToClipboard } from '../core/clipboard'
 import { downloadWrongBookMarkdown, renderWrongBookMarkdown } from '../core/wrongbook-export'
+import { importWrongBookFromMarkdown, type ImportResult } from '../core/wrongbook-import'
 import { lastNDays, weeklyReport } from '../core/stats'
 import { t } from '../core/strings'
 import { PixelPanel } from './PixelPanel'
@@ -110,6 +111,43 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
     const md = renderWrongBookMarkdown(save.wrongAnswers ?? [], course)
     const ok = await copyTextToClipboard(md)
     setToast(ok ? t('toast.copied') : t('toast.copyFail'))
+  }
+
+  // 错题本导入：粘贴 Markdown → 解析 → 合并到 save
+  const [importText, setImportText] = useState('')
+  const [showImport, setShowImport] = useState(false)
+  const appendWrongAnswers = useGameStore((s) => s.appendWrongAnswers)
+  const onParseImport = () => {
+    audio.play('click')
+    if (!importText.trim()) {
+      setToast(t('toast.importEmpty'))
+      return
+    }
+    const existing = new Set((save.wrongAnswers ?? []).map((w) => w.questionKey))
+    const result: ImportResult = importWrongBookFromMarkdown(
+      importText,
+      course,
+      existing,
+    )
+    const added = appendWrongAnswers(result.records)
+    const finalAdded = added
+    const finalSkipped = result.skipped + (result.records.length - added)
+    setToast(
+      result.added === 0 && result.skipped === 0 && result.unrecognized === 0
+        ? t('toast.importEmpty')
+        : t('toast.imported', {
+            added: finalAdded,
+            skipped: finalSkipped,
+            unrecognized: result.unrecognized,
+          }),
+    )
+    // 成功导入或跳过部分即可清空；unrecognized > 0 时保留供用户检查
+    if (finalAdded > 0 || finalSkipped > 0) {
+      setImportText('')
+      setShowImport(false)
+    }
+    void finalAdded
+    void finalSkipped
   }
 
   return (
@@ -242,6 +280,44 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
               </PixelButton>
             </div>
           </>
+        )}
+      </PixelPanel>
+
+      <PixelPanel title={t('panel.import')}>
+        <p className="muted small">{t('import.hint')}</p>
+        {showImport ? (
+          <div className="import-area">
+            <textarea
+              className="import-area__textarea"
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              placeholder={t('import.placeholder')}
+              rows={10}
+              spellCheck={false}
+              aria-label={t('panel.import')}
+            />
+            <div className="row row--center">
+              <PixelButton variant="ghost" onClick={onParseImport} disabled={!importText.trim()}>
+                {t('import.btn.parse')}
+              </PixelButton>
+              <PixelButton
+                variant="ghost"
+                onClick={() => {
+                  audio.play('click')
+                  setImportText('')
+                  setShowImport(false)
+                }}
+              >
+                {t('import.btn.cancel')}
+              </PixelButton>
+            </div>
+          </div>
+        ) : (
+          <div className="row row--center">
+            <PixelButton variant="ghost" onClick={() => setShowImport(true)}>
+              📥 粘贴 Markdown 导入
+            </PixelButton>
+          </div>
         )}
       </PixelPanel>
 
