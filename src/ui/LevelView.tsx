@@ -21,6 +21,7 @@ type Phase = 'learn' | 'quiz' | 'result'
 export function LevelView({ regionId, level, onBack }: Props) {
   const completeLevel = useGameStore((s) => s.completeLevel)
   const recordWrongAnswer = useGameStore((s) => s.recordWrongAnswer)
+  const recordCorrect = useGameStore((s) => s.recordCorrect)
   const removeFromWrongAnswers = useGameStore((s) => s.removeFromWrongAnswers)
   const [phase, setPhase] = useState<Phase>('learn')
   const [qIndex, setQIndex] = useState(0)
@@ -129,6 +130,8 @@ export function LevelView({ regionId, level, onBack }: Props) {
               if (!correct) {
                 setWrong((w) => w + 1)
                 recordWrongAnswer(`${regionId}:${level.id}:${qIndex}`)
+              } else {
+                recordCorrect()
               }
               handleAnswer(correct)
             }}

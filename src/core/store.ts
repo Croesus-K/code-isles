@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { earnedBadgeIds } from './badges'
 import type { CourseDef } from '../content/course'
 import { computeReward, type RewardInfo } from './progress'
+import { bumpDailyStat } from './stats'
 import {
   defaultSave,
   grantGold,
@@ -54,6 +55,8 @@ interface GameStore {
   dismissCorruptNotice: () => void
   /** 答错时记录到错题本（同题反复错会累计 attempts）。 */
   recordWrongAnswer: (questionKey: string) => void
+  /** 答对时累计今日 correct 统计（不重复入错题本；如已在错题本则不动它）。 */
+  recordCorrect: () => void
   /** 答对 / 复习通过时把题目移出错题本（如果存在）。 */
   removeFromWrongAnswers: (questionKey: string) => void
   /** 清空错题本（用户主动操作）。 */
@@ -103,6 +106,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
           },
         },
         player: grantXp(grantGold(cur.player, reward.gold), reward.xp),
+        history: bumpDailyStat(cur.history ?? [], 'cleared', 1),
       }
       if (course) {
         const earned = earnedBadgeIds(next, course)
@@ -152,7 +156,17 @@ export const useGameStore = create<GameStore>()((set, get) => {
               i === idx ? { ...w, attempts: w.attempts + 1, wrongAt: now } : w,
             )
           : [...list, { questionKey, wrongAt: now, attempts: 1 }]
-      commit({ ...cur, wrongAnswers: next })
+      commit({
+        ...cur,
+        wrongAnswers: next,
+        history: bumpDailyStat(cur.history ?? [], 'wrong', 1),
+      })
+    },
+    recordCorrect: () => {
+      const cur = get().save
+      const nextHistory = bumpDailyStat(cur.history ?? [], 'correct', 1)
+      if (nextHistory === cur.history) return
+      commit({ ...cur, history: nextHistory })
     },
     removeFromWrongAnswers: (questionKey) => {
       const cur = get().save

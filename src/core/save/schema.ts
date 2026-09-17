@@ -36,6 +36,23 @@ export interface WrongAnswerRecord {
   attempts: number
 }
 
+/**
+ * 学习统计每日聚合。date 用本地时区 YYYY-MM-DD（避免 UTC 跨日）。
+ * 用于：
+ * - 周报（最近 7 天的活动 + 正确率）
+ * - 30 天热力图（每日活跃强度）
+ * - 连续打卡天数（currentStreak / bestStreak）
+ */
+export interface DailyStat {
+  date: string
+  cleared: number
+  correct: number
+  wrong: number
+}
+
+/** 保留最近多少天的历史（更早的丢弃，控制存档体积） */
+export const HISTORY_KEEP_DAYS = 90
+
 export interface SaveData {
   version: number
   player: PlayerState
@@ -45,6 +62,8 @@ export interface SaveData {
   badges: string[]
   /** 答错过的题目记录（错题本） */
   wrongAnswers: WrongAnswerRecord[]
+  /** 学习统计每日聚合（按本地时区日期） */
+  history: DailyStat[]
   settings: Settings
   updatedAt: string
 }
@@ -56,9 +75,22 @@ export function defaultSave(): SaveData {
     regions: {},
     badges: [],
     wrongAnswers: [],
+    history: [],
     settings: { soundOn: true },
     updatedAt: '',
   }
+}
+
+/** 本地时区的 YYYY-MM-DD 字符串（避免 UTC 跨日把活动记错天） */
+export function todayLocal(now: Date = new Date()): string {
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function isISODate(v: unknown): v is string {
+  return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
 }
 
 function validateWrongAnswer(v: unknown): WrongAnswerRecord | null {
@@ -127,6 +159,29 @@ export function validateSave(data: unknown): SaveData | null {
     const wa = validateWrongAnswer(item)
     if (wa) wrongAnswers.push(wa)
   }
+  // history 校验：按日期合并，丢弃非法条目，保留最近 N 天
+  const rawHistory = Array.isArray(d.history) ? d.history : []
+  const historyMap = new Map<string, DailyStat>()
+  for (const item of rawHistory) {
+    if (typeof item !== 'object' || item === null) continue
+    const hd = item as Record<string, unknown>
+    if (!isISODate(hd.date)) continue
+    const cleared = isNonNegativeInt(hd.cleared) ? hd.cleared : 0
+    const correct = isNonNegativeInt(hd.correct) ? hd.correct : 0
+    const wrong = isNonNegativeInt(hd.wrong) ? hd.wrong : 0
+    const existing = historyMap.get(hd.date) ?? { date: hd.date, cleared: 0, correct: 0, wrong: 0 }
+    existing.cleared += cleared
+    existing.correct += correct
+    existing.wrong += wrong
+    historyMap.set(hd.date, existing)
+  }
+  const sortedHistory = Array.from(historyMap.values()).sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
+  )
+  const history: DailyStat[] =
+    sortedHistory.length > HISTORY_KEEP_DAYS
+      ? sortedHistory.slice(-HISTORY_KEEP_DAYS)
+      : sortedHistory
   const regions: Record<string, RegionProgress> = {}
   for (const [key, val] of Object.entries(d.regions)) {
     const rp = validateRegionProgress(val)
@@ -139,6 +194,7 @@ export function validateSave(data: unknown): SaveData | null {
     regions,
     badges: d.badges as string[],
     wrongAnswers,
+    history,
     settings: { soundOn: settings.soundOn },
     updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
   }

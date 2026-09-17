@@ -6,6 +6,8 @@ import type { SaveData, WrongAnswerRecord } from '../core/save/schema'
 import { useGameStore } from '../core/store'
 import { audio } from '../core/audio'
 import { downloadWrongBookMarkdown } from '../core/wrongbook-export'
+import { lastNDays, weeklyReport } from '../core/stats'
+import { t } from '../core/strings'
 import { PixelPanel } from './PixelPanel'
 import { PixelButton } from './PixelButton'
 
@@ -92,6 +94,14 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
   const visibleWrong = wrongList.slice(0, WRONG_PREVIEW_LIMIT)
   const hiddenCount = wrongList.length - visibleWrong.length
 
+  // 学习统计：周报 + 7 天活动柱状图
+  const weekly = useMemo(() => weeklyReport(save.history ?? []), [save.history])
+  const last7 = useMemo(() => lastNDays(save.history ?? [], 7), [save.history])
+  const last30 = useMemo(() => lastNDays(save.history ?? [], 30), [save.history])
+  const totalAnswers = weekly.totalCorrect + weekly.totalWrong
+  const accuracyPct = totalAnswers === 0 ? 0 : Math.round(weekly.accuracy * 100)
+  void last30 // 留作后续热力图扩展
+
   return (
     <>
       <div className="crumbs">
@@ -106,6 +116,56 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
           金币 <strong className="gold">{save.player.gold}</strong> · XP {save.player.xp} · 通关{' '}
           {totalCleared}/{totalLv} 关 · 徽章 {earnedCount}/{totalCount}
         </p>
+      </PixelPanel>
+
+      <PixelPanel title="📊 学习统计 · 最近 7 天">
+        {totalAnswers === 0 && weekly.totalCleared === 0 ? (
+          <p className="stats__empty">还没有活动记录——去通关一关，统计就开始生长 ✨</p>
+        ) : (
+          <>
+            <div className="stats__kpis">
+              <div className="stats__kpi">
+                <div className="stats__kpi-val">{weekly.totalCleared}</div>
+                <div className="stats__kpi-label">通关</div>
+              </div>
+              <div className="stats__kpi">
+                <div className="stats__kpi-val">{totalAnswers}</div>
+                <div className="stats__kpi-label">答题</div>
+              </div>
+              <div className="stats__kpi">
+                <div className="stats__kpi-val">{accuracyPct}%</div>
+                <div className="stats__kpi-label">正确率</div>
+              </div>
+              <div className="stats__kpi">
+                <div className="stats__kpi-val">{weekly.currentStreak}</div>
+                <div className="stats__kpi-label">连续天数</div>
+              </div>
+              <div className="stats__kpi">
+                <div className="stats__kpi-val">{weekly.bestStreak}</div>
+                <div className="stats__kpi-label">最佳连击</div>
+              </div>
+            </div>
+            <div
+              className="stats__bars"
+              role="img"
+              aria-label={`最近 7 天活动：${last7.map((c) => `${c.date} 答对 ${c.correct} 答错 ${c.wrong}`).join('；')}`}
+            >
+              {last7.map((c) => {
+                const total = c.correct + c.wrong
+                const heightPct = total === 0 ? 4 : Math.max(8, (total / 8) * 100) // 8 题/天 = 满格参考线
+                const isToday = c.date === last7[last7.length - 1].date
+                const dayLabel = c.date.slice(5) // MM-DD
+                return (
+                  <div key={c.date} className="stats__bar-col" title={t('stats.barTip', { date: c.date, correct: c.correct, wrong: c.wrong, cleared: c.cleared })}>
+                    <div className={`stats__bar ${isToday ? 'stats__bar--today' : ''}`} style={{ height: `${heightPct}%` }} />
+                    <div className="stats__bar-label">{dayLabel}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="stats__legend">柱高 = 答题数 · 今日柱额外高亮 · 7 天活动 ≥ 1 即计入连续天数</p>
+          </>
+        )}
       </PixelPanel>
 
       <PixelPanel

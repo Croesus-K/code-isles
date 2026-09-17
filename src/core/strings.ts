@@ -18,8 +18,11 @@ export type StringKey =
   // --- WorldMap ---
   | 'panel.worldMap'
   | 'panel.wrongbook'
+  | 'panel.stats'
   | 'label.wrongCount'
   | 'label.totalAttempts'
+  | 'stats.barTip'
+  | 'stats.empty'
   | 'btn.review'
   | 'btn.export'
   | 'panel.adventurer'
@@ -130,8 +133,11 @@ const zhCN = {
   // --- WorldMap ---
   'panel.worldMap': '世界地图',
   'panel.wrongbook': '📒 错题本',
+  'panel.stats': '📊 学习统计 · 最近 7 天',
   'label.wrongCount': '{n} 道题待巩固',
   'label.totalAttempts': '（累计答错 {n} 次）',
+  'stats.barTip': '{date} · 答对 {correct} 答错 {wrong} · 通关 {cleared}',
+  'stats.empty': '还没有活动记录——去通关一关，统计就开始生长 ✨',
   'btn.review': '📘 复习',
   'btn.export': '📄 导出',
   'panel.adventurer': '冒险者档案',
