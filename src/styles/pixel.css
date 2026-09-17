@@ -1297,3 +1297,33 @@ body {
   margin: 8px 0 0;
   text-align: center;
 }
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  background: var(--c-ink);
+  color: var(--c-parchment);
+  font-size: 13px;
+  font-weight: bold;
+  padding: 10px 16px;
+  border: 2px solid var(--c-gold);
+  border-radius: 3px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  animation: toast-pop 0.18s ease-out;
+  pointer-events: none;
+}
+
+@keyframes toast-pop {
+  from {
+    transform: translateX(-50%) translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}

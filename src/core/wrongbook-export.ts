@@ -216,3 +216,13 @@ export function downloadWrongBookMarkdown(
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/**
+ * 渲染 markdown 文本（不下载、不写剪贴板），供"复制到剪贴板"按钮等场景复用。
+ */
+export function renderWrongBookMarkdown(
+  wrongAnswers: readonly WrongAnswerRecord[],
+  course: CourseDef,
+): string {
+  return buildWrongBookMarkdown(wrongAnswers, course)
+}

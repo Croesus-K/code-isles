@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import type { CourseDef } from '../content/course'
 import { clearedCount, isRegionUnlocked } from '../core/progress'
 import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
-import { downloadWrongBookMarkdown } from '../core/wrongbook-export'
+import { copyTextToClipboard } from '../core/clipboard'
+import { downloadWrongBookMarkdown, renderWrongBookMarkdown } from '../core/wrongbook-export'
 import { t } from '../core/strings'
 import { PixelButton } from './PixelButton'
 import { PixelPanel } from './PixelPanel'
+import { Toast } from './Toast'
 
 interface Props {
   course: CourseDef
@@ -23,6 +26,8 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
   // 显式消费 hasWrong，避免 tsc unused warning（语义：错题本摘要是否需要渲染）
   void hasWrong
 
+  const [toast, setToast] = useState<string | null>(null)
+
   // 按 region 聚合错题数 + 累计 attempts —— 热力图分布
   // key 形如 "regionId:levelId:qIdx"，按 ':' 切首段即可
   const wrongByRegion = new Map<string, { count: number; attempts: number }>()
@@ -33,6 +38,13 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
     cur.count += 1
     cur.attempts += r.attempts || 0
     wrongByRegion.set(regionId, cur)
+  }
+
+  const onCopyMarkdown = async () => {
+    audio.play('click')
+    const md = renderWrongBookMarkdown(wrongList, course)
+    const ok = await copyTextToClipboard(md)
+    setToast(ok ? t('toast.copied') : t('toast.copyFail'))
   }
 
   return (
@@ -69,6 +81,9 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
               title={t('btn.export')}
             >
               {t('btn.export')}
+            </PixelButton>
+            <PixelButton variant="ghost" onClick={onCopyMarkdown} title={t('btn.copy')}>
+              {t('btn.copy')}
             </PixelButton>
           </div>
         </PixelPanel>
@@ -126,6 +141,7 @@ export function WorldMap({ course, save, onEnter, onOpenProfile }: Props) {
           })}
         </div>
       </PixelPanel>
+      <Toast message={toast} />
     </>
   )
 }

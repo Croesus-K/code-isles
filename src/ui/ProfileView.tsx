@@ -1,15 +1,17 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { BADGES, BADGE_INDEX } from '../content/badges'
 import { earnedBadgeIds } from '../core/badges'
 import type { CourseDef } from '../content/course'
 import type { SaveData, WrongAnswerRecord } from '../core/save/schema'
 import { useGameStore } from '../core/store'
 import { audio } from '../core/audio'
-import { downloadWrongBookMarkdown } from '../core/wrongbook-export'
+import { copyTextToClipboard } from '../core/clipboard'
+import { downloadWrongBookMarkdown, renderWrongBookMarkdown } from '../core/wrongbook-export'
 import { lastNDays, weeklyReport } from '../core/stats'
 import { t } from '../core/strings'
 import { PixelPanel } from './PixelPanel'
 import { PixelButton } from './PixelButton'
+import { Toast } from './Toast'
 
 interface Props {
   course: CourseDef
@@ -101,6 +103,14 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
   const totalAnswers = weekly.totalCorrect + weekly.totalWrong
   const accuracyPct = totalAnswers === 0 ? 0 : Math.round(weekly.accuracy * 100)
   void last30 // 留作后续热力图扩展
+
+  const [toast, setToast] = useState<string | null>(null)
+  const onCopyWrongBook = async () => {
+    audio.play('click')
+    const md = renderWrongBookMarkdown(save.wrongAnswers ?? [], course)
+    const ok = await copyTextToClipboard(md)
+    setToast(ok ? t('toast.copied') : t('toast.copyFail'))
+  }
 
   return (
     <>
@@ -214,6 +224,14 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
               </PixelButton>
               <PixelButton
                 variant="ghost"
+                onClick={onCopyWrongBook}
+                disabled={wrongList.length === 0}
+                title={wrongList.length === 0 ? '没有错题可复制' : '复制 Markdown 清单到剪贴板'}
+              >
+                📋 复制到剪贴板
+              </PixelButton>
+              <PixelButton
+                variant="ghost"
                 onClick={() => {
                   if (confirm('确定清空所有错题记录？')) {
                     useGameStore.getState().clearWrongAnswers()
@@ -250,6 +268,7 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
       <div className="row row--center">
         <PixelButton onClick={onBack}>回到世界地图</PixelButton>
       </div>
+      <Toast message={toast} />
     </>
   )
 }

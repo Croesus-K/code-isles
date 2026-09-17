@@ -23,8 +23,11 @@ export type StringKey =
   | 'label.totalAttempts'
   | 'stats.barTip'
   | 'stats.empty'
+  | 'toast.copied'
+  | 'toast.copyFail'
   | 'btn.review'
   | 'btn.export'
+  | 'btn.copy'
   | 'panel.adventurer'
   | 'btn.adventurerBadges'
   | 'meta.building'
@@ -138,8 +141,11 @@ const zhCN = {
   'label.totalAttempts': '（累计答错 {n} 次）',
   'stats.barTip': '{date} · 答对 {correct} 答错 {wrong} · 通关 {cleared}',
   'stats.empty': '还没有活动记录——去通关一关，统计就开始生长 ✨',
+  'toast.copied': '✓ 已复制到剪贴板',
+  'toast.copyFail': '复制失败，请改用「导出」按钮',
   'btn.review': '📘 复习',
   'btn.export': '📄 导出',
+  'btn.copy': '📋 复制',
   'panel.adventurer': '冒险者档案',
   'btn.adventurerBadges': '冒险者徽章',
   'meta.building': '建设中 · 后续版本开放',
