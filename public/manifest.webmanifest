@@ -1,0 +1,52 @@
+{
+  "name": "代码群岛 Code Isles · 用像素冒险学正经知识",
+  "short_name": "代码群岛",
+  "description": "像素风的 Python 学习冒险游戏：5 区域 23 关 153 题 + 30 枚成就徽章 + 金币/经验经济闭环。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#141c2b",
+  "theme_color": "#141c2b",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education", "games"],
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "继续冒险",
+      "short_name": "继续",
+      "description": "直接进入群岛继续昨天的进度",
+      "url": "./?action=continue",
+      "icons": [
+        { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

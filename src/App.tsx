@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 import { pythonBasics } from './content/python-basics'
 import { audio } from './core/audio'
 import { useGameStore } from './core/store'
+import { applyUpdate, subscribeSw } from './core/serviceWorker'
 import { DonateModal } from './ui/DonateModal'
 import { LevelView } from './ui/LevelView'
 import { PixelButton } from './ui/PixelButton'
@@ -36,11 +37,17 @@ export default function App() {
   const [status, setStatus] = useState('欢迎来到群岛。')
   const [showDonate, setShowDonate] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [swState, setSwState] = useState({ needUpdate: false, offline: false })
 
   // 同步 audio 模块与存档中的音效开关。
   useEffect(() => {
     audio.setEnabled(save.settings.soundOn)
   }, [save.settings.soundOn])
+
+  // 订阅 Service Worker 状态（离线 / 新版本）
+  useEffect(() => {
+    return subscribeSw(setSwState)
+  }, [])
 
   // 进入"档案"场景时自动 reconcile 一次徽章（不强制，但能让旧存档补齐徽章）。
   useEffect(() => {
@@ -121,6 +128,36 @@ export default function App() {
     </PixelPanel>
   ) : null
 
+  const offlineBanner = swState.offline ? (
+    <PixelPanel className="offline-banner" title="离线模式">
+      <p className="offline-banner__text">
+        ⚠ 当前网络不可用。本应用已缓存到本地，离线时仍可继续答题；联网后自动恢复。
+      </p>
+    </PixelPanel>
+  ) : null
+
+  const updateBanner = swState.needUpdate ? (
+    <PixelPanel className="update-banner" title="新版本可用">
+      <p className="update-banner__text">
+        已下载好新版代码，是否立即刷新？刷新后会清空当前页面状态（存档在 localStorage 不受影响）。
+      </p>
+      <div className="row row--center">
+        <PixelButton
+          onClick={() => {
+            applyUpdate()
+            // 给 SKIP_WAITING + new SW 接管 + clients.claim 一点点时间
+            setTimeout(() => window.location.reload(), 300)
+          }}
+        >
+          立即刷新
+        </PixelButton>
+        <PixelButton variant="ghost" onClick={() => setSwState((s) => ({ ...s, needUpdate: false }))}>
+          稍后
+        </PixelButton>
+      </div>
+    </PixelPanel>
+  ) : null
+
   if (scene.name === 'title') {
     return (
       <main className="screen">
@@ -134,6 +171,8 @@ export default function App() {
           </div>
           {hasSave && <p className="footnote">检测到本地存档，进度将自动续航。</p>}
         </header>
+        {offlineBanner}
+        {updateBanner}
         {corruptNotice}
         {saveTools}
         <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
@@ -150,6 +189,8 @@ export default function App() {
         </p>
       </PixelPanel>
 
+      {offlineBanner}
+      {updateBanner}
       {corruptNotice}
 
       {scene.name === 'world' && (

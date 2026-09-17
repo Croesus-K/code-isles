@@ -986,3 +986,29 @@ body {
   padding: 6px 10px;
   margin: 8px 0 0;
 }
+
+/* --- 离线模式横幅 --- */
+.offline-banner .pixel-panel__title {
+  background: var(--c-ink-2);
+  color: var(--c-white);
+}
+
+.offline-banner__text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 0;
+}
+
+/* --- 新版本提示横幅 --- */
+.update-banner .pixel-panel__title {
+  background: var(--c-success);
+  color: var(--c-white);
+}
+
+.update-banner__text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+  margin: 0 0 10px;
+}
