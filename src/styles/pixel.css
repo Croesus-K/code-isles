@@ -1082,6 +1082,33 @@ body {
   border-bottom: none;
 }
 
+.wrongbook__item--clickable {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--c-ink-3);
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.wrongbook__item--clickable:hover {
+  background: var(--c-parchment);
+  filter: brightness(0.97);
+}
+.wrongbook__item--clickable:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: -2px;
+  background: rgba(255, 200, 80, 0.08);
+}
+.wrongbook__cta {
+  color: var(--c-link);
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .wrongbook__where {
   color: var(--c-link);
   font-weight: bold;

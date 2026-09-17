@@ -25,7 +25,7 @@ type Scene =
   | { name: 'region'; regionIndex: number }
   | { name: 'level'; regionIndex: number; levelIndex: number }
   | { name: 'profile' }
-  | { name: 'review' }
+  | { name: 'review'; focusQuestionKey?: string }
 
 export default function App() {
   const {
@@ -242,6 +242,7 @@ export default function App() {
           save={save}
           onBack={() => setScene({ name: 'world' })}
           onStartReview={() => setScene({ name: 'review' })}
+          onStartReviewQuestion={(qk) => setScene({ name: 'review', focusQuestionKey: qk })}
         />
       )}
 
@@ -250,6 +251,7 @@ export default function App() {
           course={pythonBasics}
           save={save}
           onExit={() => setScene({ name: 'profile' })}
+          focusQuestionKey={scene.focusQuestionKey}
         />
       )}
 

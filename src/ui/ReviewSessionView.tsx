@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import type { CourseDef, Question } from '../content/course'
+import type { CourseDef } from '../content/course'
 import type { SaveData } from '../core/save/schema'
 import { useGameStore } from '../core/store'
 import { audio } from '../core/audio'
+import { buildReviewQueue, type ReviewItem } from '../core/review-queue'
 import { PixelPanel } from './PixelPanel'
 import { PixelButton } from './PixelButton'
 import { QuizQuestion } from './QuizQuestion'
@@ -11,36 +12,13 @@ interface Props {
   course: CourseDef
   save: SaveData
   onExit: () => void
-}
-
-interface ReviewItem {
-  questionKey: string
-  question: Question
-  /** 第一次入错题本的时间（显示用） */
-  wrongAt: string
-  attempts: number
-}
-
-/**
- * 把 questionKey (`regionId:levelId:questionIndex`) 拆出来，从 course 查回题目。
- * 返回 null = 数据漂移 / 旧 key 失效，由调用方过滤。
- */
-function resolveQuestion(
-  key: string,
-  course: CourseDef,
-): { question: Question; regionId: string; levelId: string; questionIndex: number } | null {
-  const parts = key.split(':')
-  if (parts.length !== 3) return null
-  const [regionId, levelId, qIdxStr] = parts
-  const region = course.regions.find((r) => r.id === regionId)
-  if (!region) return null
-  const level = region.levels.find((l) => l.id === levelId)
-  if (!level) return null
-  const questionIndex = parseInt(qIdxStr, 10)
-  if (!Number.isInteger(questionIndex) || questionIndex < 0 || questionIndex >= level.questions.length) {
-    return null
-  }
-  return { question: level.questions[questionIndex], regionId, levelId, questionIndex }
+  /**
+   * 指定从错题本里"直达复习"哪一道题。设置后：
+   * - 队列长度 = 1（仅含该题），便于聚焦巩固
+   * - 完成后直接进入 result，可返回档案
+   * 留空 = 按错题时间倒序复习全部
+   */
+  focusQuestionKey?: string
 }
 
 /**
@@ -51,27 +29,15 @@ function resolveQuestion(
  *  - 错题队列在组件挂载时快照，过程中不再变（用户外部清空不影响本次）
  *  - 答完进 result 屏，可「再来一组」或返回档案
  */
-export function ReviewSessionView({ course, save, onExit }: Props) {
+export function ReviewSessionView({ course, save, onExit, focusQuestionKey }: Props) {
   const removeFromWrongAnswers = useGameStore((s) => s.removeFromWrongAnswers)
   const recordWrongAnswer = useGameStore((s) => s.recordWrongAnswer)
 
   // 错题快照：进入复习时一次性解析完，过程中不再随存档变化
-  const queue = useMemo<ReviewItem[]>(() => {
-    const items: ReviewItem[] = []
-    for (const r of save.wrongAnswers ?? []) {
-      const resolved = resolveQuestion(r.questionKey, course)
-      if (!resolved) continue
-      items.push({
-        questionKey: r.questionKey,
-        question: resolved.question,
-        wrongAt: r.wrongAt,
-        attempts: r.attempts,
-      })
-    }
-    // 最近答错的排前——用户最近才被这道题卡住，先巩固它
-    items.sort((a, b) => (b.wrongAt || '').localeCompare(a.wrongAt || ''))
-    return items
-  }, [course, save.wrongAnswers])
+  const queue = useMemo<ReviewItem[]>(
+    () => buildReviewQueue(save, course, focusQuestionKey),
+    [course, save.wrongAnswers, focusQuestionKey],
+  )
 
   const [index, setIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)

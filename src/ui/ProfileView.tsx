@@ -19,6 +19,8 @@ interface Props {
   save: SaveData
   onBack: () => void
   onStartReview: () => void
+  /** 点错题条目直达复习该题 */
+  onStartReviewQuestion: (questionKey: string) => void
 }
 
 interface ResolvedWrong {
@@ -72,7 +74,13 @@ function resolveWrong(
  * 已达成徽章 = 亮卡；未达成 = 灰卡，显示达成条件文案。
  * 错题本按区域 → 关卡分组，最多展示前 50 条（更多提示"+"）。
  */
-export function ProfileView({ course, save, onBack, onStartReview }: Props) {
+export function ProfileView({
+  course,
+  save,
+  onBack,
+  onStartReview,
+  onStartReviewQuestion,
+}: Props) {
   const earnedSet = useMemo(() => new Set(earnedBadgeIds(save, course)), [save, course])
   const earnedCount = earnedSet.size
   const totalCount = BADGES.length
@@ -230,14 +238,26 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
             </p>
             <ul className="wrongbook__list">
               {visibleWrong.map((w) => (
-                <li key={w.record.questionKey} className="wrongbook__item">
-                  <div className="wrongbook__where">
-                    {w.regionName} · {w.levelName}
-                  </div>
-                  <div className="wrongbook__q">{w.questionPreview}</div>
-                  <div className="wrongbook__attempts" aria-label={`答错 ${w.record.attempts} 次`}>
-                    ×{w.record.attempts}
-                  </div>
+                <li key={w.record.questionKey}>
+                  <button
+                    type="button"
+                    className="wrongbook__item wrongbook__item--clickable"
+                    onClick={() => {
+                      audio.play('click')
+                      onStartReviewQuestion(w.record.questionKey)
+                    }}
+                    title={`直达复习：${w.regionName} · ${w.levelName}`}
+                    aria-label={`复习：${w.regionName} · ${w.levelName}，${w.questionPreview}（答错 ${w.record.attempts} 次）`}
+                  >
+                    <span className="wrongbook__where">
+                      {w.regionName} · {w.levelName}
+                    </span>
+                    <span className="wrongbook__q">{w.questionPreview}</span>
+                    <span className="wrongbook__attempts" aria-hidden="true">
+                      ×{w.record.attempts}
+                    </span>
+                    <span className="wrongbook__cta" aria-hidden="true">→</span>
+                  </button>
                 </li>
               ))}
             </ul>
