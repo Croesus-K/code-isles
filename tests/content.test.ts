@@ -26,14 +26,21 @@ describe('课程内容完整性', () => {
     }
   })
 
-  it('题量：普通关 4~9 题，Boss ≥ 8 题', () => {
+  /**
+   * 题量策略：「高效入门」节奏。
+   * - 普通关 3~9 题（少而精：每关只教 1 个核心概念，题目宁少勿滥）
+   * - Boss 关 ≥ 4 题（综合实战题，不靠堆量）
+   * 设计权衡：原本是"普通关 4-9 / Boss ≥ 8"，导致新手在前 3 关就答 20+ 题选择题，
+   * 容易疲劳。新版每关控制在 3-4 道（含实战 + Bug 题型），让新手更快进入下一关。
+   */
+  it('题量：普通关 3~9 题，Boss ≥ 4 题', () => {
     for (const r of regions) {
       for (const l of r.levels) {
         const n = l.questions.length
         if (l.boss) {
-          expect(n, `${l.id} Boss 题量`).toBeGreaterThanOrEqual(8)
+          expect(n, `${l.id} Boss 题量`).toBeGreaterThanOrEqual(4)
         } else {
-          expect(n, `${l.id} 题量下限`).toBeGreaterThanOrEqual(4)
+          expect(n, `${l.id} 题量下限`).toBeGreaterThanOrEqual(3)
           expect(n, `${l.id} 题量上限`).toBeLessThanOrEqual(9)
         }
       }
