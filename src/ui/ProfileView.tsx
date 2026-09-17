@@ -4,6 +4,8 @@ import { earnedBadgeIds } from '../core/badges'
 import type { CourseDef } from '../content/course'
 import type { SaveData, WrongAnswerRecord } from '../core/save/schema'
 import { useGameStore } from '../core/store'
+import { audio } from '../core/audio'
+import { downloadWrongBookMarkdown } from '../core/wrongbook-export'
 import { PixelPanel } from './PixelPanel'
 import { PixelButton } from './PixelButton'
 
@@ -138,6 +140,17 @@ export function ProfileView({ course, save, onBack, onStartReview }: Props) {
                 title={wrongList.length === 0 ? '错题本为空，没有可复习的题目' : `复习 ${wrongList.length} 道错题`}
               >
                 📘 复习这 {wrongList.length} 道错题
+              </PixelButton>
+              <PixelButton
+                variant="ghost"
+                onClick={() => {
+                  audio.play('click')
+                  downloadWrongBookMarkdown(save.wrongAnswers ?? [], course)
+                }}
+                disabled={wrongList.length === 0}
+                title={wrongList.length === 0 ? '没有错题可导出' : '导出 Markdown 清单'}
+              >
+                📄 导出错题清单
               </PixelButton>
               <PixelButton
                 variant="ghost"
