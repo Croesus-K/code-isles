@@ -11,6 +11,7 @@ export interface SideMenuProps {
   save: SaveData
   /** 课程切换：menu 换课后通知 App 重置场景到新课程的 world（或留在 title） */
   onSelectCourse: (courseId: string) => void
+  onGoTitle: () => void
   onGoWorld: () => void
   onGoProfile: () => void
   onGoReview: () => void
@@ -32,6 +33,11 @@ export function SideMenu(p: SideMenuProps) {
   const inGame = p.sceneName === 'region' || p.sceneName === 'level'
   return (
     <aside className="sidemenu" aria-label="游戏菜单">
+      {/* —— 返回主菜单（常驻顶部；存档在 localStorage，返回不丢进度） —— */}
+      <button className="side-btn side-btn--title" onClick={() => { audio.play('click'); p.onGoTitle() }}>
+        🏠 返回主菜单
+      </button>
+
       {/* —— 课程 —— */}
       <section className="sidemenu__section" aria-label="课程">
         <h4 className="side-title">课程</h4>

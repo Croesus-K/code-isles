@@ -218,6 +218,7 @@ export default function App() {
         activeCourse={course}
         save={save}
         onSelectCourse={onSelectCourse}
+        onGoTitle={() => setScene({ name: 'title' })}
         onGoWorld={() => setScene({ name: 'world' })}
         onGoProfile={() => setScene({ name: 'profile' })}
         onGoReview={() => setScene({ name: 'review' })}

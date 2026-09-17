@@ -361,6 +361,18 @@ body {
   border-color: var(--c-gold);
   background: rgba(242, 182, 61, 0.2);
 }
+.side-btn--title {
+  width: 100%;
+  padding: 9px 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--c-gold-hi);
+  border-color: var(--c-gold);
+  background: rgba(242, 182, 61, 0.14);
+}
+.side-btn--title:hover {
+  background: rgba(242, 182, 61, 0.26);
+}
 .side-btn--mini {
   font-size: 11px;
   padding: 2px 6px;
