@@ -109,7 +109,7 @@ export const region3: RegionDef = {
           kind: 'fill',
           prompt: '补全代码，让循环能正常结束（填运算符）：',
           code: 'count = 0\nwhile count < 3:\n    print(count)\n    count ___ 1',
-          answers: ['+=', '= count +'],
+          answers: ['+=', '= count + 1'],
           placeholder: '让 count 每轮加 1',
           hint: '两种写法都行：复合赋值运算符，或先加再赋值。',
           explain: 'count += 1 是 count = count + 1 的简写。while 循环体里必须更新条件涉及的变量，否则条件永远不变，变成死循环。',
