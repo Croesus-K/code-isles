@@ -1,4 +1,4 @@
-import type { CourseDef } from './course'
+import type { CourseDef, RegionDef } from './course'
 import { pythonBasics } from './python-basics'
 import { javascriptBasics } from './javascript-basics'
 
@@ -20,6 +20,20 @@ export const COURSE_PREF_KEY = 'code-isles-course-pref'
 
 export function getCourse(id: string): CourseDef {
   return COURSES.find((c) => c.id === id) ?? pythonBasics
+}
+
+/**
+ * 把服务端下发的秘境岛区域合入课程（App 渲染统一走合并后的课程）。
+ * - secret 为空 / 无关卡 → 原样返回（静态课程里是占位 stub，levels 为空）
+ * - stub 已存在（同 id）→ 原位替换为完整内容
+ * - stub 不存在 → 追加到末尾
+ */
+export function withSecretRegion(course: CourseDef, secret?: RegionDef | null): CourseDef {
+  if (!secret || !Array.isArray(secret.levels) || secret.levels.length === 0) return course
+  if (course.regions.some((r) => r.id === secret.id)) {
+    return { ...course, regions: course.regions.map((r) => (r.id === secret.id ? secret : r)) }
+  }
+  return { ...course, regions: [...course.regions, secret] }
 }
 
 /** 课程通关进度（已通关关卡 / 可玩关卡总数），用于菜单里的进度条 */

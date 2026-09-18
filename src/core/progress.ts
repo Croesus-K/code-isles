@@ -7,19 +7,26 @@ import type { SaveData, Stars } from './save/schema'
 import { checkKey } from './secret-key'
 
 /**
- * 隐藏岛屿是否已解锁：存档里存了密钥且密钥校验通过。
- * 存的是密钥本身，换盐/换算法后旧密钥自动失效（无需存档迁移）。
+ * 存档里的密钥格式是否合法（2026-09-18 起为在册制）。
+ * 客户端只能验格式；密钥是否真的有效由服务端 /api/secret/unlock 判定，
+ * 判定通过的关卡内容由 store.secretLevels 持有。这里返回 true 仅代表
+ * "曾通过服务端验证、格式完好"，用于让秘境岛卡显示为已解锁。
  */
 export function isSecretUnlocked(save: SaveData): boolean {
   const key = save.secretKey
   return typeof key === 'string' && checkKey(key) !== null
 }
 
-/** 区域是否可进入：隐藏区域只看密钥；区域 1 永远解锁；之后要求上一区域的 Boss 关已通关 */
+/**
+ * 区域是否可进入：
+ * - 隐藏区域 stub（levels 为空）永远锁定——内容还没从服务端下发
+ * - 隐藏区域（内容已下发）只看密钥格式；区域 1 永远解锁
+ * - 之后要求上一区域的 Boss 关已通关
+ */
 export function isRegionUnlocked(save: SaveData, course: CourseDef, regionIndex: number): boolean {
   const region = course.regions[regionIndex]
   if (!region || region.comingSoon) return false
-  if (region.hidden) return isSecretUnlocked(save)
+  if (region.hidden) return region.levels.length > 0 && isSecretUnlocked(save)
   if (regionIndex === 0) return true
   const prev = course.regions[regionIndex - 1]
   const last = prev.levels[prev.levels.length - 1]

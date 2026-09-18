@@ -29,6 +29,13 @@ export const ANN_LAST_READ_KEY = 'code-isles-ann-last-read'
 /** 内置兜底列表（与 public/announcements.json 保持同步，json 优先） */
 export const BUNDLED_ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'r22-secret-server',
+    date: '2026-09-18',
+    tag: 'feature',
+    title: '秘境岛升级：服务端验证密钥',
+    body: '秘境岛接入服务器校验——输入密钥后由后端确认并下发关卡内容，游戏本体里不再包含秘境岛题目。已领取旧密钥的冒险者请联系作者换发新密钥（在册制上线，旧卡全部失效），解锁过的玩家重新输入一次即可。',
+  },
+  {
     id: 'r21-secret-isle',
     date: '2026-09-18',
     tag: 'feature',

@@ -1,45 +1,28 @@
 /**
- * 隐藏岛屿专属密钥：离线校验（无后端，纯前端静态站）。
+ * 隐藏岛屿专属密钥：格式与归一化（2026-09-18 起为「在册制」）。
  *
- * 密钥形态：ISLE-XXXX-XXXX-XXXX（前缀可省、大小写不敏感、连字符可省）。
- * 结构 = 8 字符载荷（5 bit 版本号 + 35 bit 随机数）+ 4 字符校验段。
- * 校验段 = FNV-1a(载荷字符 + 盐) 的低 20 bit。盐以异或混淆形式内嵌在
- * 打包产物里——能挡住随手伪造 / 撞格式，但挡不住决心逆向的玩家；
- * 这是荣誉制打赏门，不是安全边界。
+ * 形态：ISLE-XXXX-XXXX-XXXX（前缀可省、大小写不敏感、连字符/空格可省）。
+ * 结构 = 8 字符随机载荷 + 4 字符校验段（FNV-1a(载荷) 低 20 bit）。
  *
- * 发卡：仓主在本地跑 node tools/mint-key.mjs（盐的明文在 tools/.secret，
- * 已 gitignore，不进仓库）。随机空间 2^35，瞎猜命中率 ≈ 1/343 亿；
- * 校验段再叠 1/2^20，暴力瞎编基本不可行。
+ * 安全模型（相比旧版盐混淆方案的升级）：
+ *  - 客户端只做格式与校验段检查（挡手滑打错字），不再持有任何秘密
+ *  - 密钥是否「在册」由服务端 /api/secret/unlock 查 D1 决定（只存哈希）
+ *  - 秘境岛题目也只由服务端下发——bundle 里连题目都没有
  *
- * 版本号：载荷最高 5 bit，当前为 1。以后换算法/换盐可以升版本，
- * 旧密钥自然失效，用 tools/mint-key.mjs 重新发卡即可。
+ * 三处算法必须严格一致：本文件、code-isles tools/mint-key.mjs、
+ * counter-worker/src/index.js 的 normalizeSecretKey。
  */
 
 /** 32 个易读字符（去掉 0/O/1/I/L，防止手抄混淆） */
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 const PREFIX = 'ISLE'
-/** 载荷字符数（8 × 5 bit = 40 bit = 5 bit 版本 + 35 bit 随机） */
+/** 载荷字符数（8 随机） */
 const PAYLOAD_LEN = 8
 /** 校验段字符数（4 × 5 bit = 20 bit） */
 const CHECK_LEN = 4
-/** 当前密钥版本（1~31） */
-const KEY_VERSION = 1
 /** 校验段掩码：20 bit */
 const CHECK_MASK = 0xfffff
-
-/**
- * 盐的明文绝不直接出现在源码里。这里存的是逐字符异或后的字节流，
- * 还原流 k(i) = (i*37+11) & 0xFF，与 tools/mint-key.mjs 保持一致。
- * 明文只存在于仓主本地的 tools/.secret（gitignore）。
- */
-const SECRET_OBFUSCATED = [60, 85, 96, 77, 171, 246, 140, 111, 5, 57, 73, 149, 162, 216, 36, 4, 104, 228, 192, 243]
-
-function secret(): string {
-  return String.fromCharCode(
-    ...SECRET_OBFUSCATED.map((c, i) => c ^ (((i * 37 + 11) & 0xff))),
-  )
-}
 
 /** FNV-1a 32 位；Math.imul 保证 32 位乘法语义 */
 function fnv1a32(str: string): number {
@@ -52,9 +35,9 @@ function fnv1a32(str: string): number {
 }
 
 /**
- * 归一化 + 校验密钥。
- * 合法 → 返回规范形态（ISLE-XXXX-XXXX-XXXX）；非法 → null。
- * 接受：带/不带 ISLE 前缀、带/不带连字符与空格、小写输入。
+ * 归一化 + 格式校验。
+ * 格式合法 → 返回规范形态（ISLE-XXXX-XXXX-XXXX）；非法 → null。
+ * 注意：格式合法 ≠ 在册有效——是否真的能解锁由服务端判定。
  */
 export function checkKey(raw: string): string | null {
   if (typeof raw !== 'string') return null
@@ -64,29 +47,16 @@ export function checkKey(raw: string): string | null {
   for (const ch of norm) {
     if (!ALPHABET.includes(ch)) return null
   }
-  const payloadChars = norm.slice(0, PAYLOAD_LEN)
-  const checkChars = norm.slice(PAYLOAD_LEN)
-
-  // 解码 40 bit 载荷（< 2^40，double 精度无损）
-  let payload = 0
-  for (let i = 0; i < PAYLOAD_LEN; i++) {
-    payload += ALPHABET.indexOf(payloadChars[i]) * 32 ** i
-  }
-  const version = Math.floor(payload / 2 ** 35)
-  if (version !== KEY_VERSION) return null
-
-  // 解码 20 bit 校验值并重算比对
+  const payload = norm.slice(0, PAYLOAD_LEN)
   let check = 0
   for (let i = 0; i < CHECK_LEN; i++) {
-    check += ALPHABET.indexOf(checkChars[i]) * 32 ** i
+    check += ALPHABET.indexOf(norm[PAYLOAD_LEN + i]) * 32 ** i
   }
-  const expected = fnv1a32(payloadChars + '|' + secret()) & CHECK_MASK
-  if (check !== expected) return null
-
-  return `${PREFIX}-${payloadChars.slice(0, 4)}-${payloadChars.slice(4)}-${checkChars}`
+  if ((fnv1a32(payload) & CHECK_MASK) !== check) return null
+  return `${PREFIX}-${payload.slice(0, 4)}-${payload.slice(4)}-${norm.slice(PAYLOAD_LEN)}`
 }
 
-/** 便捷判定：这串输入是不是有效密钥 */
+/** 便捷判定：这串输入格式上是不是一把合法钥匙 */
 export function verifyKey(raw: string): boolean {
   return checkKey(raw) !== null
 }

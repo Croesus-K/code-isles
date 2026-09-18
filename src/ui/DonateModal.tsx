@@ -9,8 +9,8 @@ interface Props {
   onClose: () => void
   /** 已兑换的规范密钥（存档里读到什么就传什么；undefined = 未解锁） */
   secretKey?: string
-  /** 兑换回调：返回 true = 密钥有效（含重复兑换），false = 校验失败 */
-  onRedeem: (key: string) => boolean
+  /** 兑换回调（调服务端校验）：'ok' = 通过；'bad' = 密钥不在册；'network' = 网络问题 */
+  onRedeem: (key: string) => Promise<'ok' | 'bad' | 'network'>
 }
 
 /**
@@ -34,7 +34,7 @@ const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select
 export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [keyInput, setKeyInput] = useState('')
-  const [keyState, setKeyState] = useState<'idle' | 'ok' | 'err'>('idle')
+  const [keyState, setKeyState] = useState<'idle' | 'submitting' | 'ok' | 'err' | 'net'>('idle')
 
   // 每次打开给一声 click 作开启反馈。
   useEffect(() => {
@@ -105,15 +105,23 @@ export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
 
   const submitKey = (e: FormEvent) => {
     e.preventDefault()
-    const ok = onRedeem(keyInput)
-    if (ok) {
-      setKeyState('ok')
-      setKeyInput('')
-      audio.play('levelClear')
-    } else {
-      setKeyState('err')
-      audio.play('wrong')
-    }
+    if (keyState === 'submitting') return
+    setKeyState('submitting')
+    void onRedeem(keyInput)
+      .then((result) => {
+        if (result === 'ok') {
+          setKeyState('ok')
+          setKeyInput('')
+          audio.play('levelClear')
+        } else {
+          setKeyState(result === 'network' ? 'net' : 'err')
+          audio.play('wrong')
+        }
+      })
+      .catch(() => {
+        setKeyState('net')
+        audio.play('wrong')
+      })
   }
 
   return (
@@ -176,6 +184,11 @@ export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
               密钥不对——检查一下大小写、连字符，或联系作者确认。
             </p>
           )}
+          {keyState === 'net' && (
+            <p className="donate-key__msg donate-key__msg--err" role="alert">
+              网络不给力，没能连上验证服务器——稍后再试一次。
+            </p>
+          )}
           <form className="donate-key__row" onSubmit={submitKey}>
             <input
               className="donate-key__input"
@@ -183,15 +196,15 @@ export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
               value={keyInput}
               onChange={(e) => {
                 setKeyInput(e.target.value)
-                if (keyState !== 'idle') setKeyState('idle')
+                if (keyState !== 'idle' && keyState !== 'submitting') setKeyState('idle')
               }}
               placeholder={secretKey ? maskKey(secretKey) : 'ISLE-XXXX-XXXX-XXXX'}
               aria-label="专属密钥"
               spellCheck={false}
               autoComplete="off"
             />
-            <PixelButton variant="primary" disabled={keyInput.trim().length === 0}>
-              解锁
+            <PixelButton variant="primary" disabled={keyState === 'submitting' || keyInput.trim().length === 0}>
+              {keyState === 'submitting' ? '验证中…' : '解锁'}
             </PixelButton>
           </form>
         </div>

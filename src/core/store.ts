@@ -16,10 +16,20 @@ import {
   type WrongAnswerRecord,
 } from './save/schema'
 import { checkKey } from './secret-key'
+import {
+  cacheSecretLevels,
+  clearCachedSecretLevels,
+  fetchSecretLevels,
+  loadCachedSecretLevels,
+  type SecretLevels,
+} from './secret-level'
 import { clearSaved, loadSave, persistSave } from './save/storage'
 
 const storage = typeof localStorage === 'undefined' ? null : localStorage
 const init = storage ? loadSave(storage) : { save: null as SaveData | null, corrupt: false }
+
+/** 启动恢复只跑一次（App 只挂载一次，但守一道防 StrictMode 双调） */
+let secretRestoreStarted = false
 
 interface GameStore {
   save: SaveData
@@ -28,6 +38,8 @@ interface GameStore {
   corruptDetected: boolean
   /** true = 最近一次写入失败（隐私模式 / quota 满）；进入"读档不持久化"降级态 */
   persistFailed: boolean
+  /** 服务端下发的秘境岛内容（courseId → RegionDef）；null = 未解锁或未拉取 */
+  secretLevels: SecretLevels | null
   newGame: () => void
   addXp: (amount: number) => void
   addGold: (amount: number) => void
@@ -75,10 +87,17 @@ interface GameStore {
    */
   recordChallengeFinished: (result: { correct: number; wrong: number; skipped: number }) => void
   /**
-   * 兑换隐藏岛屿密钥：校验通过则写入存档（重复兑换覆盖，支持换卡）并合并徽章。
-   * 返回 true = 密钥有效（含重复兑换同一枚）；false = 校验失败。
+   * 兑换隐藏岛屿密钥：调服务端 /api/secret/unlock 校验 + 拉取秘境岛内容。
+   * ok = 通过（写存档 + 缓存 + 合并徽章）；bad = 密钥不在册；network = 网络问题。
+   * 重复兑换同一枚幂等；换新钥会覆盖旧钥并刷新内容。
    */
-  redeemKey: (key: string, course: CourseDef) => boolean
+  redeemKey: (key: string, course: CourseDef) => Promise<'ok' | 'bad' | 'network'>
+  /**
+   * 启动恢复（App 挂载时调一次）：优先用 localStorage 缓存立即恢复秘境岛，
+   * 然后后台静默再校验——内容有更新就刷新缓存，密钥被吊销就清除解锁态。
+   * 网络失败保持现状（有缓存可离线玩）。
+   */
+  restoreSecretLevels: () => Promise<void>
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -98,6 +117,7 @@ export const useGameStore = create<GameStore>()((set, get) => {
     hasSave: init.save !== null,
     corruptDetected: init.corrupt,
     persistFailed: false,
+    secretLevels: null,
     newGame: () => commit(defaultSave()),
     addXp: (amount) => {
       withPlayer((p) => grantXp(p, amount))
@@ -159,8 +179,11 @@ export const useGameStore = create<GameStore>()((set, get) => {
       return true
     },
     resetSave: () => {
-      if (storage) clearSaved(storage)
-      set({ save: defaultSave(), hasSave: false, persistFailed: false })
+      if (storage) {
+        clearSaved(storage)
+        clearCachedSecretLevels(storage)
+      }
+      set({ save: defaultSave(), hasSave: false, persistFailed: false, secretLevels: null })
     },
     dismissCorruptNotice: () => set({ corruptDetected: false }),
     recordWrongAnswer: (questionKey) => {
@@ -243,11 +266,12 @@ export const useGameStore = create<GameStore>()((set, get) => {
       }
       commit({ ...cur, challengeStats: next })
     },
-    redeemKey: (key, course) => {
-      const normalized = checkKey(key)
-      if (!normalized) return false
+    redeemKey: async (key, course) => {
+      const result = await fetchSecretLevels(key)
+      if (result.status === 'network') return 'network'
+      if (result.status !== 'ok') return 'bad'
       const cur = get().save
-      let next: SaveData = { ...cur, secretKey: normalized }
+      let next: SaveData = { ...cur, secretKey: result.key }
       // 解锁即刻颁发赞助者徽章（幂等，与 completeLevel 的合并逻辑一致）
       const earned = earnedBadgeIds(next, course)
       const owned = new Set(next.badges)
@@ -255,8 +279,32 @@ export const useGameStore = create<GameStore>()((set, get) => {
       if (missing.length > 0) {
         next = { ...next, badges: Array.from(new Set([...next.badges, ...missing])) }
       }
+      cacheSecretLevels(storage, result.key, result.levels)
       commit(next)
-      return true
+      set({ secretLevels: result.levels })
+      return 'ok'
+    },
+    restoreSecretLevels: async () => {
+      if (secretRestoreStarted) return
+      secretRestoreStarted = true
+      const key = get().save.secretKey
+      if (!key) return
+      // 先用本地缓存即时恢复（离线 / 弱网也能进秘境岛）
+      const cached = loadCachedSecretLevels(storage)
+      if (cached && checkKey(cached.key) !== null) {
+        if (cached.key === key) set({ secretLevels: cached.levels })
+        else clearCachedSecretLevels(storage) // 存档换过钥：旧缓存不可信
+      }
+      // 后台静默再校验：内容更新 → 刷新缓存；密钥被吊销 → 清解锁态
+      const res = await fetchSecretLevels(key)
+      if (res.status === 'ok') {
+        cacheSecretLevels(storage, res.key, res.levels)
+        set({ secretLevels: res.levels })
+      } else if (res.status === 'bad-key') {
+        clearCachedSecretLevels(storage)
+        commit({ ...get().save, secretKey: undefined })
+        set({ secretLevels: null })
+      }
     },
   }
 })

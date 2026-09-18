@@ -8,7 +8,7 @@ import {
   requestNotificationPermission,
   shouldNotifyToday,
 } from './core/notifications'
-import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse } from './content/courses'
+import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse, withSecretRegion } from './content/courses'
 import { AnnouncePanel } from './ui/AnnouncePanel'
 import { ChallengeView } from './ui/ChallengeView'
 import { DonateModal } from './ui/DonateModal'
@@ -54,6 +54,8 @@ export default function App() {
     toggleSound,
     syncBadges,
     redeemKey,
+    restoreSecretLevels,
+    secretLevels,
   } = useGameStore()
   const [scene, setScene] = useState<Scene>({ name: 'title' })
   const [status, setStatus] = useState('欢迎来到群岛。')
@@ -63,6 +65,14 @@ export default function App() {
   const [swState, setSwState] = useState({ needUpdate: false, offline: false })
 
   const course = getCourse(courseId)
+  // 秘境岛（服务端下发制）：有下发内容时原位替换静态 stub，形成完整课程视图
+  const activeCourse = withSecretRegion(course, secretLevels?.[course.id])
+
+  // 启动恢复秘境岛：有缓存先即时恢复，再后台向服务端再校验（内容更新 / 吊销感知）
+  useEffect(() => {
+    void restoreSecretLevels()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 状态条 4 秒后自动回落默认文案 —— 一次性提示（导出成功/切课等）不该永久驻留
   useEffect(() => {
@@ -92,8 +102,8 @@ export default function App() {
 
   // 进入"档案"场景时自动 reconcile 一次徽章（按当前课程计算）。
   useEffect(() => {
-    if (scene.name === 'profile') syncBadges(course)
-  }, [scene.name, course, syncBadges])
+    if (scene.name === 'profile') syncBadges(activeCourse)
+  }, [scene.name, activeCourse, syncBadges])
 
   // 进入 WorldMap 时，如已有错题且今日未提醒 → 主动请求权限 + 发一次通知
   // 注意：仅在 world scene 触发，不在 game scene 打断玩家
@@ -220,7 +230,7 @@ export default function App() {
           open={showDonate}
           onClose={() => setShowDonate(false)}
           secretKey={save.secretKey}
-          onRedeem={(key) => redeemKey(key, course)}
+          onRedeem={(key) => redeemKey(key, activeCourse)}
         />
       </main>
     )
@@ -292,14 +302,14 @@ export default function App() {
               </div>
             </PixelPanel>
             <WorldMap
-              course={course}
+              course={activeCourse}
               save={save}
               onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
               onOpenProfile={() => setScene({ name: 'profile' })}
               onStartReview={() => setScene({ name: 'review' })}
               onLockedSecret={() => setShowDonate(true)}
               onStartChallenge={
-                challengePoolSize(save, course) > 0
+                challengePoolSize(save, activeCourse) > 0
                   ? () => setScene({ name: 'challenge' })
                   : undefined
               }
@@ -310,7 +320,7 @@ export default function App() {
 
         {scene.name === 'profile' && (
           <ProfileView
-            course={course}
+            course={activeCourse}
             save={save}
             onBack={() => setScene({ name: 'world' })}
             onStartReview={() => setScene({ name: 'review' })}
@@ -320,7 +330,7 @@ export default function App() {
 
         {scene.name === 'review' && (
           <ReviewSessionView
-            course={course}
+            course={activeCourse}
             save={save}
             onExit={() => setScene({ name: 'profile' })}
             focusQuestionKey={scene.focusQuestionKey}
@@ -329,7 +339,7 @@ export default function App() {
 
         {scene.name === 'region' && (
           <RegionMap
-            region={course.regions[scene.regionIndex]}
+            region={activeCourse.regions[scene.regionIndex]}
             save={save}
             onBack={() => setScene({ name: 'world' })}
             onEnterLevel={(levelIndex) =>
@@ -340,15 +350,15 @@ export default function App() {
 
         {scene.name === 'level' && (
           <LevelView
-            regionId={course.regions[scene.regionIndex].id}
-            level={course.regions[scene.regionIndex].levels[scene.levelIndex]}
+            regionId={activeCourse.regions[scene.regionIndex].id}
+            level={activeCourse.regions[scene.regionIndex].levels[scene.levelIndex]}
             onBack={() => setScene({ name: 'region', regionIndex: scene.regionIndex })}
           />
         )}
 
         {scene.name === 'challenge' && (
           <ChallengeView
-            course={course}
+            course={activeCourse}
             save={save}
             onExit={() => setScene({ name: 'world' })}
           />
@@ -361,7 +371,7 @@ export default function App() {
           open={showDonate}
           onClose={() => setShowDonate(false)}
           secretKey={save.secretKey}
-          onRedeem={(key) => redeemKey(key, course)}
+          onRedeem={(key) => redeemKey(key, activeCourse)}
         />
         <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
       </main>
