@@ -15,6 +15,7 @@ import {
   type Stars,
   type WrongAnswerRecord,
 } from './save/schema'
+import { checkKey } from './secret-key'
 import { clearSaved, loadSave, persistSave } from './save/storage'
 
 const storage = typeof localStorage === 'undefined' ? null : localStorage
@@ -73,6 +74,11 @@ interface GameStore {
    * 由 ChallengeView 结算时调用；用于颁发挑战相关徽章。
    */
   recordChallengeFinished: (result: { correct: number; wrong: number; skipped: number }) => void
+  /**
+   * 兑换隐藏岛屿密钥：校验通过则写入存档（重复兑换覆盖，支持换卡）并合并徽章。
+   * 返回 true = 密钥有效（含重复兑换同一枚）；false = 校验失败。
+   */
+  redeemKey: (key: string, course: CourseDef) => boolean
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -236,6 +242,21 @@ export const useGameStore = create<GameStore>()((set, get) => {
         totalSkipped: prev.totalSkipped + result.skipped,
       }
       commit({ ...cur, challengeStats: next })
+    },
+    redeemKey: (key, course) => {
+      const normalized = checkKey(key)
+      if (!normalized) return false
+      const cur = get().save
+      let next: SaveData = { ...cur, secretKey: normalized }
+      // 解锁即刻颁发赞助者徽章（幂等，与 completeLevel 的合并逻辑一致）
+      const earned = earnedBadgeIds(next, course)
+      const owned = new Set(next.badges)
+      const missing = earned.filter((id) => !owned.has(id))
+      if (missing.length > 0) {
+        next = { ...next, badges: Array.from(new Set([...next.badges, ...missing])) }
+      }
+      commit(next)
+      return true
     },
   }
 })

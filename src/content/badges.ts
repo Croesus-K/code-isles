@@ -74,7 +74,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: 'graduate',
     name: '毕业生',
-    desc: '通过毕业大测验（字典城 B 关）。',
+    desc: '通过任意一门课程的毕业大测验。',
     icon: '🎓',
   },
   {
@@ -94,6 +94,12 @@ export const BADGES: BadgeDef[] = [
     name: '挑战之王',
     desc: '在综合挑战中以全对通关一次（不能跳过 / 答错）。',
     icon: '👑',
+  },
+  {
+    id: 'isles-benefactor',
+    name: '金主赞助人',
+    desc: '用专属密钥解锁了秘境岛。群岛因你而更辽阔。',
+    icon: '🗝',
   },
 ]
 

@@ -53,6 +53,7 @@ export default function App() {
     resetSave,
     toggleSound,
     syncBadges,
+    redeemKey,
   } = useGameStore()
   const [scene, setScene] = useState<Scene>({ name: 'title' })
   const [status, setStatus] = useState('欢迎来到群岛。')
@@ -215,7 +216,12 @@ export default function App() {
           onReview={() => setScene({ name: 'review' })}
           statusLine={statusLine}
         />
-        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
+        <DonateModal
+          open={showDonate}
+          onClose={() => setShowDonate(false)}
+          secretKey={save.secretKey}
+          onRedeem={(key) => redeemKey(key, course)}
+        />
       </main>
     )
   }
@@ -291,6 +297,7 @@ export default function App() {
               onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
               onOpenProfile={() => setScene({ name: 'profile' })}
               onStartReview={() => setScene({ name: 'review' })}
+              onLockedSecret={() => setShowDonate(true)}
               onStartChallenge={
                 challengePoolSize(save, course) > 0
                   ? () => setScene({ name: 'challenge' })
@@ -350,7 +357,12 @@ export default function App() {
         <footer className="footnote">
           代码群岛 · 多课程像素学习游戏。左侧菜单可切换课程 / 云端同步 / 工具箱；右侧为更新公告。
         </footer>
-        <DonateModal open={showDonate} onClose={() => setShowDonate(false)} />
+        <DonateModal
+          open={showDonate}
+          onClose={() => setShowDonate(false)}
+          secretKey={save.secretKey}
+          onRedeem={(key) => redeemKey(key, course)}
+        />
         <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
       </main>
 

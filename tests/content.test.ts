@@ -19,11 +19,14 @@ describe('课程内容完整性（所有课程）', () => {
     }
   })
 
-  it('每门课程每个 region 关数 ≥ 3，最后一关是 Boss 且唯一', () => {
+  it('每门课程每个常规 region 关数 ≥ 3，最后一关是 Boss 且唯一；隐藏区域允许单关加试', () => {
     for (const c of allCourses) {
       for (const r of c.regions) {
         if (r.comingSoon) continue
-        expect(r.levels.length, `${c.id}/${r.id} 关数`).toBeGreaterThanOrEqual(3)
+        // 秘境岛等隐藏区域是单关毕业加试，不受"区域 ≥ 3 关"的常规体量约束
+        if (!r.hidden) {
+          expect(r.levels.length, `${c.id}/${r.id} 关数`).toBeGreaterThanOrEqual(3)
+        }
         const last = r.levels[r.levels.length - 1]
         expect(last.boss, `${c.id}/${r.id} 最后一关应为 Boss`).toBe(true)
         expect(r.levels.filter((l) => l.boss).length, `${c.id}/${r.id} 只能有一个 Boss`).toBe(1)
@@ -124,9 +127,14 @@ describe('课程内容完整性（所有课程）', () => {
 describe('Python 课程内容完整性', () => {
   const regions = pythonBasics.regions
 
-  it('五个区域齐备，区域 id 与顺序正确', () => {
-    expect(regions.map((r) => r.id)).toEqual(['1', '2', '3', '4', '5'])
-    expect(regions.every((r) => r.levels.length >= 4)).toBe(true)
+  it('五个常规区域齐备 + 末尾一个隐藏区域，id 与顺序正确', () => {
+    const visible = regions.filter((r) => !r.hidden)
+    expect(visible.map((r) => r.id)).toEqual(['1', '2', '3', '4', '5'])
+    // 隐藏区域（秘境岛）排在末尾，单关加试不满足"区域 ≥ 4 关"的常规体量
+    expect(regions[regions.length - 1]?.hidden).toBe(true)
+    expect(regions[regions.length - 1]?.id).toBe('6')
+    expect(regions.filter((r) => !r.hidden).every((r) => r.levels.length >= 4)).toBe(true)
+    expect(regions[regions.length - 1]!.levels.length).toBeGreaterThanOrEqual(1)
   })
 
   it('Python 关卡 id 前缀与区域一致', () => {

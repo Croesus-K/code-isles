@@ -787,6 +787,17 @@ body {
   text-align: left;
 }
 
+/* 隐藏区域（秘境岛）：金色描边示意"藏宝" */
+.pixel-btn.region-card--secret {
+  border-color: var(--c-gold);
+}
+
+/* 锁定态的秘境岛：虚线边 + 轻微降透明，点击打开打赏弹窗 */
+.pixel-btn.region-card--secret-locked {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
 .region-card__info {
   flex: 1;
   display: flex;
@@ -1462,6 +1473,11 @@ body {
   text-align: center;
 }
 
+/* 带密钥区的加宽版：输入 19 位密钥不换行 */
+.donate-card--wide {
+  max-width: 400px;
+}
+
 .donate-card__title {
   background: var(--c-sea);
   color: var(--c-gold-hi);
@@ -1504,6 +1520,80 @@ body {
   line-height: 1.7;
   color: #4a4030;
   margin: 0 0 14px;
+}
+
+/* --- 打赏弹窗 · 密钥兑换区 --- */
+.donate-key {
+  border-top: 3px dashed var(--c-ink);
+  padding: 10px 0 4px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.donate-key__divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--c-sea);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.donate-key__note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #4a4030;
+  margin: 0 0 8px;
+}
+
+.donate-key__msg {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 8px;
+  padding: 5px 8px;
+  border: 3px solid var(--c-ink);
+}
+
+.donate-key__msg--ok {
+  background: var(--c-xp);
+  color: var(--c-white);
+  border-color: var(--c-ink);
+}
+
+.donate-key__msg--err {
+  background: var(--c-danger);
+  color: var(--c-white);
+  border-color: var(--c-ink);
+}
+
+.donate-key__row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.donate-key__input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--c-ink);
+  background: var(--c-white);
+  border: 3px solid var(--c-ink);
+  padding: 6px 8px;
+}
+
+.donate-key__input:focus {
+  outline: none;
+  border-color: var(--c-gold);
+}
+
+.donate-key__input::placeholder {
+  color: var(--c-ink);
+  opacity: 0.45;
 }
 
 @media (prefers-reduced-motion: reduce) {

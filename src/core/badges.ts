@@ -8,16 +8,18 @@
  *  - star-apprentice    ：存在 cleared level 且 stars === 3
  *  - perfectionist      ：存在某区域，所有 level 都 stars === 3（且至少有 1 关）
  *  - flawless-warrior   ：任意 boss level stars === 3（3 星 ⟺ 零错零提示）
- *  - graduate           ：区域 5 的 boss（5-B）被 cleared
+ *  - graduate           ：最后一段非隐藏区域的 boss 被 cleared（Python 5-B / JS j4-B）
  *  - challenge-novice   ：完成至少 1 次综合挑战
  *  - challenge-veteran  ：累计完成 10 次综合挑战
  *  - challenge-ace      ：综合挑战至少 1 次全对通关（wrong + skip 都为 0）
+ *  - isles-benefactor   ：凭专属密钥解锁了秘境岛（打赏者徽章）
  *
  * 不在快照里持久化任何中间量——所有判定都能从 save + course 直接重建。
  */
 
 import type { CourseDef, RegionDef } from '../content/course'
 import type { SaveData } from './save/schema'
+import { isSecretUnlocked } from './progress'
 
 /** "区域 N 全部 cleared" 通用判定；找不到对应区域返回 false。 */
 function regionFullyCleared(save: SaveData, course: CourseDef, regionIndex: number): boolean {
@@ -92,12 +94,13 @@ export function earnedBadgeIds(save: SaveData, course: CourseDef): string[] {
 
   if (anyBossFlawless(save, course)) earned.add('flawless-warrior')
 
-  // graduate：区域 5（字典城）的 boss level（5-B）被 cleared。
-  const region5 = course.regions[4]
-  if (region5) {
-    const bossLv = region5.levels.find((lv) => lv.boss)
+  // graduate：最后一段"非隐藏"区域的 boss level 被 cleared。
+  // 不写死区域下标——JS 课程（j4-B）同样能拿毕业徽章，隐藏区域不参与判定。
+  const lastVisible = [...course.regions].reverse().find((r) => !r.hidden)
+  if (lastVisible) {
+    const bossLv = lastVisible.levels.find((lv) => lv.boss)
     if (bossLv) {
-      const rp = save.regions[region5.id]
+      const rp = save.regions[lastVisible.id]
       if (rp?.levels[bossLv.id]?.cleared) earned.add('graduate')
     }
   }
@@ -109,6 +112,9 @@ export function earnedBadgeIds(save: SaveData, course: CourseDef): string[] {
     if (cs.finished >= 10) earned.add('challenge-veteran')
     if (cs.perfect >= 1) earned.add('challenge-ace')
   }
+
+  // 赞助者徽章：凭专属密钥解锁了秘境岛
+  if (isSecretUnlocked(save)) earned.add('isles-benefactor')
 
   return Array.from(earned)
 }

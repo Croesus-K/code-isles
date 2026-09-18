@@ -88,6 +88,12 @@ export interface SaveData {
   history: DailyStat[]
   /** 综合挑战累计统计（缺省视为全 0） */
   challengeStats?: ChallengeStats
+  /**
+   * 隐藏岛屿的解锁密钥（规范形态 ISLE-XXXX-XXXX-XXXX）。
+   * 存的是密钥本身而非布尔值：解锁判定 = verifyKey(secretKey)，
+   * 将来换盐/换算法时旧密钥自动失效，无需存档迁移。
+   */
+  secretKey?: string
   settings: Settings
   updatedAt: string
 }
@@ -233,6 +239,8 @@ export function validateSave(data: unknown): SaveData | null {
     wrongAnswers,
     history,
     challengeStats,
+    // secretKey：旧存档没有此字段视为未解锁；类型不对则丢弃（等于未解锁）
+    secretKey: typeof d.secretKey === 'string' && d.secretKey.length > 0 ? d.secretKey : undefined,
     settings: { soundOn: settings.soundOn },
     updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
   }

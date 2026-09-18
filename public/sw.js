@@ -13,7 +13,7 @@
  */
 /* eslint-disable no-restricted-globals */
 // 更新部署时必须 bump：activate 靠"版本名不同"清理旧缓存，同名永不清理
-const CACHE_VERSION = 'code-isles-v8'
+const CACHE_VERSION = 'code-isles-v9'
 const APP_SHELL = [
   './',
   './index.html',

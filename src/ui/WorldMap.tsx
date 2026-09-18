@@ -20,6 +20,8 @@ interface Props {
   onStartChallenge?: () => void
   /** 点击错题本 banner 上的"去复习"按钮时调用 */
   onStartReview?: () => void
+  /** 点击锁定的隐藏区域卡时调用（打开打赏弹窗输密钥） */
+  onLockedSecret?: () => void
 }
 
 export function WorldMap({
@@ -29,6 +31,7 @@ export function WorldMap({
   onOpenProfile,
   onStartChallenge,
   onStartReview,
+  onLockedSecret,
 }: Props) {
   // localStorage 用于错题复习 banner 的"暂不提醒"7 天冷却
   const storage: Pick<Storage, 'getItem' | 'setItem'> | null =
@@ -179,24 +182,35 @@ export function WorldMap({
             const total = region.levels.length
             const allDone = total > 0 && done === total
             const regionWrong = wrongByRegion.get(region.id)
+            // 隐藏区域未解锁：卡片可点（打开打赏弹窗输密钥），但不进入区域
+            const secretLocked = region.hidden && !unlocked
             return (
               <PixelButton
                 key={region.id}
                 variant="ghost"
-                className="region-card"
-                disabled={!unlocked}
-                onClick={() => onEnter(i)}
+                className={`region-card${region.hidden ? ' region-card--secret' : ''}${secretLocked ? ' region-card--secret-locked' : ''}`}
+                disabled={!unlocked && !secretLocked}
+                onClick={() => {
+                  if (secretLocked) {
+                    audio.play('click')
+                    onLockedSecret?.()
+                    return
+                  }
+                  onEnter(i)
+                }}
               >
                 <span className="region-card__info">
                   <span className="region-card__name">
-                    {region.id} · {region.name}
+                    {secretLocked ? `? · ${region.name}` : `${region.id} · ${region.name}`}
                   </span>
                   <span className="region-card__meta">
                     {region.comingSoon
                       ? t('meta.building')
-                      : unlocked
-                        ? t('meta.regionTag', { done, total, tagline: region.tagline })
-                        : t('meta.lockedHint')}
+                      : secretLocked
+                        ? '打赏解锁 · 凭专属密钥进入'
+                        : unlocked
+                          ? t('meta.regionTag', { done, total, tagline: region.tagline })
+                          : t('meta.lockedHint')}
                   </span>
                 </span>
                 <span className="region-card__right">
@@ -211,11 +225,13 @@ export function WorldMap({
                   <span className={`badge ${!unlocked ? 'badge--locked' : allDone ? 'badge--done' : ''}`}>
                     {region.comingSoon
                       ? t('badge.building')
-                      : allDone
-                        ? t('badge.completed')
-                        : unlocked
-                          ? t('badge.available')
-                          : t('badge.locked')}
+                      : secretLocked
+                        ? '🔒 密钥'
+                        : allDone
+                          ? t('badge.completed')
+                          : unlocked
+                            ? t('badge.available')
+                            : t('badge.locked')}
                   </span>
                 </span>
               </PixelButton>

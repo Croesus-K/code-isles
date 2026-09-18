@@ -6,3 +6,7 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# 发卡盐与已发密钥清单——只留在仓主本地，绝不入库
+tools/.secret
+tools/minted-keys.txt

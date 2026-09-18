@@ -4,11 +4,22 @@
  */
 import type { CourseDef, RegionDef } from '../content/course'
 import type { SaveData, Stars } from './save/schema'
+import { checkKey } from './secret-key'
 
-/** 区域是否可进入：区域 1 永远解锁；之后要求上一区域的 Boss 关已通关 */
+/**
+ * 隐藏岛屿是否已解锁：存档里存了密钥且密钥校验通过。
+ * 存的是密钥本身，换盐/换算法后旧密钥自动失效（无需存档迁移）。
+ */
+export function isSecretUnlocked(save: SaveData): boolean {
+  const key = save.secretKey
+  return typeof key === 'string' && checkKey(key) !== null
+}
+
+/** 区域是否可进入：隐藏区域只看密钥；区域 1 永远解锁；之后要求上一区域的 Boss 关已通关 */
 export function isRegionUnlocked(save: SaveData, course: CourseDef, regionIndex: number): boolean {
   const region = course.regions[regionIndex]
   if (!region || region.comingSoon) return false
+  if (region.hidden) return isSecretUnlocked(save)
   if (regionIndex === 0) return true
   const prev = course.regions[regionIndex - 1]
   const last = prev.levels[prev.levels.length - 1]

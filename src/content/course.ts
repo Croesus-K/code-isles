@@ -85,6 +85,12 @@ export interface RegionDef {
   tagline: string
   /** 内容未完成：世界地图上显示"建设中"且不可进入 */
   comingSoon?: boolean
+  /**
+   * 隐藏区域：不在常规解锁链上，凭打赏专属密钥解锁
+   * （见 core/secret-key.ts）。世界地图渲染成特殊卡，锁定时点击
+   * 打开打赏弹窗。
+   */
+  hidden?: boolean
   levels: LevelDef[]
 }
 

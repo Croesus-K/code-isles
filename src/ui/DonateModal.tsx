@@ -1,10 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 import { audio } from '../core/audio'
+import { maskKey } from '../core/secret-key'
 import { PixelButton } from './PixelButton'
 
 interface Props {
   open: boolean
   onClose: () => void
+  /** 已兑换的规范密钥（存档里读到什么就传什么；undefined = 未解锁） */
+  secretKey?: string
+  /** 兑换回调：返回 true = 密钥有效（含重复兑换），false = 校验失败 */
+  onRedeem: (key: string) => boolean
 }
 
 /**
@@ -16,14 +22,19 @@ interface Props {
  * 但因打包进 JS，换 URL 仍需 rebuild + 同步 dist；二维码方案才是零重建）。
  *
  * 当前 DONATE_URL 为空：占位态上线，等平台定好再填。
+ *
+ * 密钥解锁：打赏后向作者索取专属密钥（ISLE-XXXX-XXXX-XXXX），在下方
+ * 输入框兑换即可解锁隐藏岛屿「秘境岛」。校验离线完成（见 core/secret-key.ts）。
  */
 const DONATE_URL = ''
 
 /** 弹窗内可聚焦元素选择器：聚焦管理 + Tab 循环用 */
 const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-export function DonateModal({ open, onClose }: Props) {
+export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const [keyInput, setKeyInput] = useState('')
+  const [keyState, setKeyState] = useState<'idle' | 'ok' | 'err'>('idle')
 
   // 每次打开给一声 click 作开启反馈。
   useEffect(() => {
@@ -92,6 +103,19 @@ export function DonateModal({ open, onClose }: Props) {
     onClose()
   }
 
+  const submitKey = (e: FormEvent) => {
+    e.preventDefault()
+    const ok = onRedeem(keyInput)
+    if (ok) {
+      setKeyState('ok')
+      setKeyInput('')
+      audio.play('levelClear')
+    } else {
+      setKeyState('err')
+      audio.play('wrong')
+    }
+  }
+
   return (
     // role="dialog" + aria-modal="true" 已声明为可交互弹窗；eslint 无法推断故显式禁用
     // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
@@ -112,7 +136,7 @@ export function DonateModal({ open, onClose }: Props) {
       {/* card 是 overlay 的子节点，stopPropagation 防冒泡关闭；div 上无 role 故需禁用此条 */}
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
-        className="donate-card"
+        className="donate-card donate-card--wide"
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
@@ -133,12 +157,51 @@ export function DonateModal({ open, onClose }: Props) {
             </div>
           )}
         </div>
+
+        <div className="donate-key" aria-label="秘境岛密钥解锁">
+          <div className="donate-key__divider" aria-hidden="true">
+            <span>🗝 已有专属密钥？</span>
+          </div>
+          <p className="donate-key__note">
+            打赏后向作者索取专属密钥，在此兑换即可解锁隐藏岛屿
+            <strong>「秘境岛」</strong>——每门课的毕业加试关卡。
+          </p>
+          {keyState === 'ok' && (
+            <p className="donate-key__msg donate-key__msg--ok" role="status">
+              ✨ 解锁成功！秘境岛已浮出水面，去世界地图看看。
+            </p>
+          )}
+          {keyState === 'err' && (
+            <p className="donate-key__msg donate-key__msg--err" role="alert">
+              密钥不对——检查一下大小写、连字符，或联系作者确认。
+            </p>
+          )}
+          <form className="donate-key__row" onSubmit={submitKey}>
+            <input
+              className="donate-key__input"
+              type="text"
+              value={keyInput}
+              onChange={(e) => {
+                setKeyInput(e.target.value)
+                if (keyState !== 'idle') setKeyState('idle')
+              }}
+              placeholder={secretKey ? maskKey(secretKey) : 'ISLE-XXXX-XXXX-XXXX'}
+              aria-label="专属密钥"
+              spellCheck={false}
+              autoComplete="off"
+            />
+            <PixelButton variant="primary" disabled={keyInput.trim().length === 0}>
+              解锁
+            </PixelButton>
+          </form>
+        </div>
+
         <div className="row row--center">
           <PixelButton onClick={goSponsor} disabled={!DONATE_URL}>
             {DONATE_URL ? '前往赞助' : '赞助页开发中'}
           </PixelButton>
           <PixelButton variant="ghost" onClick={onClose}>
-            心领了
+            关闭
           </PixelButton>
         </div>
       </div>

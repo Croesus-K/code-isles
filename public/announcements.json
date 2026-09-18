@@ -1,5 +1,12 @@
 [
   {
+    "id": "r21-secret-isle",
+    "date": "2026-09-18",
+    "tag": "feature",
+    "title": "隐藏岛屿「秘境岛」开放：打赏解锁",
+    "body": "世界地图末端浮现一座金色虚线的秘密岛屿。打赏后向作者索取专属密钥（ISLE-XXXX-XXXX-XXXX），在打赏弹窗输入即可解锁每门课的毕业加试关卡——8 道专挑老坑的硬核题。解锁附赠「金主赞助人」徽章 🗝。"
+  },
+  {
     "id": "r20-challenge-badges-remind",
     "date": "2026-09-18",
     "tag": "feature",

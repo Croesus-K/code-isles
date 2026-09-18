@@ -1,5 +1,6 @@
 import type { CourseDef } from '../course'
 import type { LevelDef, RegionDef } from '../course'
+import { regionJ5 } from './region5'
 
 /**
  * 第二门课程：JavaScript 基础（高效入门版）。
@@ -1136,5 +1137,6 @@ export const javascriptBasics: CourseDef = {
   title: 'JS 基础',
   subtitle: 'JavaScript 入门：从变量到对象与闭包',
   lang: 'JavaScript',
-  regions: [regionJ1, regionJ2, regionJ3, regionJ4],
+  // regionJ5 为打赏密钥解锁的隐藏岛（RegionDef.hidden），不影响常规解锁链
+  regions: [regionJ1, regionJ2, regionJ3, regionJ4, regionJ5],
 }
