@@ -28,6 +28,7 @@ interface Props {
 export function ChallengeView({ course, save, onExit }: Props) {
   const recordCorrect = useGameStore((s) => s.recordCorrect)
   const addXp = useGameStore((s) => s.addXp)
+  const recordChallengeFinished = useGameStore((s) => s.recordChallengeFinished)
 
   const poolSize = challengePoolSize(save, course)
   const [seed, setSeed] = useState(0)
@@ -54,6 +55,12 @@ export function ChallengeView({ course, save, onExit }: Props) {
   const finish = () => {
     setFinished(true)
     audio.play(correctCount === total ? 'levelClear' : 'correct')
+    // 写一次战绩：用于颁发挑战徽章（novice / veteran / ace）
+    recordChallengeFinished({
+      correct: correctCount,
+      wrong: wrongCount,
+      skipped: skippedCount,
+    })
   }
 
   const goNext = () => {

@@ -9,6 +9,9 @@
  *  - perfectionist      ：存在某区域，所有 level 都 stars === 3（且至少有 1 关）
  *  - flawless-warrior   ：任意 boss level stars === 3（3 星 ⟺ 零错零提示）
  *  - graduate           ：区域 5 的 boss（5-B）被 cleared
+ *  - challenge-novice   ：完成至少 1 次综合挑战
+ *  - challenge-veteran  ：累计完成 10 次综合挑战
+ *  - challenge-ace      ：综合挑战至少 1 次全对通关（wrong + skip 都为 0）
  *
  * 不在快照里持久化任何中间量——所有判定都能从 save + course 直接重建。
  */
@@ -97,6 +100,14 @@ export function earnedBadgeIds(save: SaveData, course: CourseDef): string[] {
       const rp = save.regions[region5.id]
       if (rp?.levels[bossLv.id]?.cleared) earned.add('graduate')
     }
+  }
+
+  // 综合挑战系列徽章
+  const cs = save.challengeStats
+  if (cs) {
+    if (cs.finished >= 1) earned.add('challenge-novice')
+    if (cs.finished >= 10) earned.add('challenge-veteran')
+    if (cs.perfect >= 1) earned.add('challenge-ace')
   }
 
   return Array.from(earned)

@@ -53,6 +53,25 @@ export interface DailyStat {
   wrong: number
 }
 
+/**
+ * 综合挑战的累计统计。用来颁发挑战相关徽章：
+ *  - challenge-novice：finish >= 1
+ *  - challenge-veteran：finish >= 10
+ *  - challenge-ace：perfect >= 1（结算时 wrong + skip 都为 0）
+ */
+export interface ChallengeStats {
+  /** 累计完成次数（结算时记一次，不算中途退出的） */
+  finished: number
+  /** 全对通关次数（wrong + skip 均为 0） */
+  perfect: number
+  /** 累计答对题数 */
+  totalCorrect: number
+  /** 累计答错题数 */
+  totalWrong: number
+  /** 累计跳过题数 */
+  totalSkipped: number
+}
+
 /** 保留最近多少天的历史（更早的丢弃，控制存档体积） */
 export const HISTORY_KEEP_DAYS = 90
 
@@ -67,6 +86,8 @@ export interface SaveData {
   wrongAnswers: WrongAnswerRecord[]
   /** 学习统计每日聚合（按本地时区日期） */
   history: DailyStat[]
+  /** 综合挑战累计统计（缺省视为全 0） */
+  challengeStats?: ChallengeStats
   settings: Settings
   updatedAt: string
 }
@@ -185,6 +206,19 @@ export function validateSave(data: unknown): SaveData | null {
     sortedHistory.length > HISTORY_KEEP_DAYS
       ? sortedHistory.slice(-HISTORY_KEEP_DAYS)
       : sortedHistory
+  // challengeStats：缺省视为 0；字段非对象或字段非整数则丢空
+  let challengeStats: ChallengeStats | undefined
+  if (typeof d.challengeStats === 'object' && d.challengeStats !== null) {
+    const cs = d.challengeStats as Record<string, unknown>
+    const f = (k: string) => (isNonNegativeInt(cs[k]) ? (cs[k] as number) : 0)
+    challengeStats = {
+      finished: f('finished'),
+      perfect: f('perfect'),
+      totalCorrect: f('totalCorrect'),
+      totalWrong: f('totalWrong'),
+      totalSkipped: f('totalSkipped'),
+    }
+  }
   const regions: Record<string, RegionProgress> = {}
   for (const [key, val] of Object.entries(d.regions)) {
     const rp = validateRegionProgress(val)
@@ -198,6 +232,7 @@ export function validateSave(data: unknown): SaveData | null {
     badges: d.badges as string[],
     wrongAnswers,
     history,
+    challengeStats,
     settings: { soundOn: settings.soundOn },
     updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
   }

@@ -77,6 +77,24 @@ export const BADGES: BadgeDef[] = [
     desc: '通过毕业大测验（字典城 B 关）。',
     icon: '🎓',
   },
+  {
+    id: 'challenge-novice',
+    name: '挑战新手',
+    desc: '完成第 1 次综合挑战。',
+    icon: '🏁',
+  },
+  {
+    id: 'challenge-veteran',
+    name: '挑战老兵',
+    desc: '累计完成 10 次综合挑战。',
+    icon: '🎖',
+  },
+  {
+    id: 'challenge-ace',
+    name: '挑战之王',
+    desc: '在综合挑战中以全对通关一次（不能跳过 / 答错）。',
+    icon: '👑',
+  },
 ]
 
 /** id → 定义 的快速查询表；缺失时返回 undefined，调用方需自行处理。 */

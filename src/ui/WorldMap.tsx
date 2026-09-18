@@ -5,6 +5,7 @@ import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
 import { copyTextToClipboard } from '../core/clipboard'
 import { downloadWrongBookMarkdown, renderWrongBookMarkdown } from '../core/wrongbook-export'
+import { dismissWrongReviewRemind, shouldShowWrongReviewRemind } from '../core/review-remind'
 import { t } from '../core/strings'
 import { PixelButton } from './PixelButton'
 import { PixelPanel } from './PixelPanel'
@@ -17,9 +18,21 @@ interface Props {
   onOpenProfile: () => void
   /** 已通关任意关卡时显示"综合挑战"入口；未通关则不传 */
   onStartChallenge?: () => void
+  /** 点击错题本 banner 上的"去复习"按钮时调用 */
+  onStartReview?: () => void
 }
 
-export function WorldMap({ course, save, onEnter, onOpenProfile, onStartChallenge }: Props) {
+export function WorldMap({
+  course,
+  save,
+  onEnter,
+  onOpenProfile,
+  onStartChallenge,
+  onStartReview,
+}: Props) {
+  // localStorage 用于错题复习 banner 的"暂不提醒"7 天冷却
+  const storage: Pick<Storage, 'getItem' | 'setItem'> | null =
+    typeof window === 'undefined' ? null : window.localStorage
   const wrongList = save.wrongAnswers ?? []
   const wrongCount = wrongList.length
   // 总答错次数 = attempts 求和，让"反复卡住的题"更显眼
@@ -68,6 +81,36 @@ export function WorldMap({ course, save, onEnter, onOpenProfile, onStartChalleng
         <h1 className="game-logo game-logo--small">{course.lang ?? course.title}</h1>
         <p className="game-tagline">{course.subtitle}</p>
       </header>
+
+      {shouldShowWrongReviewRemind(save, storage) && onStartReview && (
+        <PixelPanel title="📒 错题堆积" className="wrong-remind">
+          <div className="row row--center wrong-remind__row">
+            <span className="wrong-remind__text">
+              错题本里已有 <strong className="bad">{wrongCount}</strong> 道题，先花 5 分钟复习一下
+              —— 答对即移出错题本，不扣 XP / 金币。
+            </span>
+            <div className="wrong-remind__btns">
+              <PixelButton
+                onClick={() => {
+                  audio.play('click')
+                  onStartReview()
+                }}
+              >
+                去复习
+              </PixelButton>
+              <PixelButton
+                variant="ghost"
+                onClick={() => {
+                  dismissWrongReviewRemind(storage)
+                  audio.play('click')
+                }}
+              >
+                暂不提醒
+              </PixelButton>
+            </div>
+          </div>
+        </PixelPanel>
+      )}
 
       <PixelPanel title={t('panel.progress')}>
         <div className="progress">

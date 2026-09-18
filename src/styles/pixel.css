@@ -1706,6 +1706,38 @@ body {
   color: var(--c-danger);
 }
 
+/* --- 错题本堆积提醒 banner --- */
+.wrong-remind .pixel-panel__title {
+  background: var(--c-danger);
+  color: var(--c-white);
+}
+
+.wrong-remind__row {
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wrong-remind__text {
+  flex: 1 1 280px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--c-ink);
+}
+
+.wrong-remind__text .bad {
+  color: var(--c-danger);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.wrong-remind__btns {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* --- 综合挑战模式 --- */
 .challenge-banner .pixel-panel__title {
   background: var(--c-accent-2);

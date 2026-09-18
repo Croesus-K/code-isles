@@ -290,6 +290,7 @@ export default function App() {
               save={save}
               onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
               onOpenProfile={() => setScene({ name: 'profile' })}
+              onStartReview={() => setScene({ name: 'review' })}
               onStartChallenge={
                 challengePoolSize(save, course) > 0
                   ? () => setScene({ name: 'challenge' })

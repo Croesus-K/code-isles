@@ -29,6 +29,13 @@ export const ANN_LAST_READ_KEY = 'code-isles-ann-last-read'
 /** 内置兜底列表（与 public/announcements.json 保持同步，json 优先） */
 export const BUNDLED_ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'r20-challenge-badges-remind',
+    date: '2026-09-18',
+    tag: 'feature',
+    title: '综合挑战徽章 + 错题堆积提醒',
+    body: '完成综合挑战会颁发「挑战新手 / 挑战老兵 / 挑战之王」三枚新徽章；错题本 ≥ 5 道时世界地图顶部出现复习提醒 banner，「暂不提醒」7 天内不再出现。',
+  },
+  {
     id: 'r19-challenge',
     date: '2026-09-18',
     tag: 'feature',

@@ -296,3 +296,67 @@ describe('返回结构', () => {
     expect(new Set(got).size).toBe(got.length)
   })
 })
+
+describe('challenge-* 系列徽章', () => {
+  it('无 challengeStats → 三枚挑战徽章都不达成', () => {
+    const save = saveWith({})
+    const got = earnedBadgeIds(save, stdCourse)
+    expect(got).not.toContain('challenge-novice')
+    expect(got).not.toContain('challenge-veteran')
+    expect(got).not.toContain('challenge-ace')
+  })
+
+  it('完成 1 次综合挑战 → challenge-novice', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: { finished: 1, perfect: 0, totalCorrect: 7, totalWrong: 3, totalSkipped: 0 },
+    })!
+    expect(earnedBadgeIds(save, stdCourse)).toContain('challenge-novice')
+    expect(earnedBadgeIds(save, stdCourse)).not.toContain('challenge-veteran')
+    expect(earnedBadgeIds(save, stdCourse)).not.toContain('challenge-ace')
+  })
+
+  it('完成 10 次综合挑战 → challenge-veteran', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: { finished: 10, perfect: 0, totalCorrect: 80, totalWrong: 20, totalSkipped: 0 },
+    })!
+    const got = earnedBadgeIds(save, stdCourse)
+    expect(got).toContain('challenge-novice')
+    expect(got).toContain('challenge-veteran')
+  })
+
+  it('完成 9 次不算 veteran', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: { finished: 9, perfect: 0, totalCorrect: 70, totalWrong: 20, totalSkipped: 0 },
+    })!
+    expect(earnedBadgeIds(save, stdCourse)).not.toContain('challenge-veteran')
+  })
+
+  it('有 perfect=1 → challenge-ace', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: { finished: 5, perfect: 1, totalCorrect: 50, totalWrong: 0, totalSkipped: 0 },
+    })!
+    const got = earnedBadgeIds(save, stdCourse)
+    expect(got).toContain('challenge-novice')
+    expect(got).toContain('challenge-ace')
+  })
+
+  it('完美次数只在 wrong + skipped 都为 0 时累计（store 侧规则，badge 侧只读 perfect）', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: { finished: 3, perfect: 0, totalCorrect: 25, totalWrong: 5, totalSkipped: 0 },
+    })!
+    expect(earnedBadgeIds(save, stdCourse)).not.toContain('challenge-ace')
+  })
+
+  it('challengeStats 字段非法 → 当作缺省，不达成', () => {
+    const save = validateSave({
+      ...defaultSave(),
+      challengeStats: 'invalid' as unknown as Record<string, number>,
+    })!
+    expect(earnedBadgeIds(save, stdCourse)).not.toContain('challenge-novice')
+  })
+})

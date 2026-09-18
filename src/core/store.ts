@@ -68,6 +68,11 @@ interface GameStore {
    * 已存在：+1 attempts + 更新 wrongAt。返回更新后的 attempts。
    */
   addToReviewQueue: (questionKey: string) => number
+  /**
+   * 综合挑战结算：累加 finished/perfect/totalCorrect/totalWrong/totalSkipped。
+   * 由 ChallengeView 结算时调用；用于颁发挑战相关徽章。
+   */
+  recordChallengeFinished: (result: { correct: number; wrong: number; skipped: number }) => void
 }
 
 export const useGameStore = create<GameStore>()((set, get) => {
@@ -212,6 +217,25 @@ export const useGameStore = create<GameStore>()((set, get) => {
         wrongAnswers: [...cur.wrongAnswers, { questionKey, wrongAt: now, attempts: 1 }],
       })
       return 1
+    },
+    recordChallengeFinished: (result) => {
+      const cur = get().save
+      const prev = cur.challengeStats ?? {
+        finished: 0,
+        perfect: 0,
+        totalCorrect: 0,
+        totalWrong: 0,
+        totalSkipped: 0,
+      }
+      const isPerfect = result.wrong === 0 && result.skipped === 0
+      const next = {
+        finished: prev.finished + 1,
+        perfect: prev.perfect + (isPerfect ? 1 : 0),
+        totalCorrect: prev.totalCorrect + result.correct,
+        totalWrong: prev.totalWrong + result.wrong,
+        totalSkipped: prev.totalSkipped + result.skipped,
+      }
+      commit({ ...cur, challengeStats: next })
     },
   }
 })
