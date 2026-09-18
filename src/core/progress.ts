@@ -34,6 +34,21 @@ export function isRegionUnlocked(save: SaveData, course: CourseDef, regionIndex:
   return save.regions[prev.id]?.levels[last.id]?.cleared === true
 }
 
+/**
+ * 世界地图可见性：隐藏区域（秘境岛）在密钥激活前不出现在地图上——
+ * 它只挂载在课程数据末尾，激活后才作为独立区域浮出。
+ */
+export function isRegionVisibleOnMap(
+  save: SaveData,
+  course: CourseDef,
+  regionIndex: number,
+): boolean {
+  const region = course.regions[regionIndex]
+  if (!region) return false
+  if (region.hidden && !isRegionUnlocked(save, course, regionIndex)) return false
+  return true
+}
+
 /** 区域内关卡是否可挑战：第 1 关永远解锁，之后要求上一关已通关 */
 export function isLevelUnlocked(save: SaveData, region: RegionDef, levelIndex: number): boolean {
   if (levelIndex === 0) return true

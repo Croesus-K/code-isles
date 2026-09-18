@@ -792,12 +792,6 @@ body {
   border-color: var(--c-gold);
 }
 
-/* 锁定态的秘境岛：虚线边 + 轻微降透明，点击打开打赏弹窗 */
-.pixel-btn.region-card--secret-locked {
-  border-style: dashed;
-  opacity: 0.85;
-}
-
 .region-card__info {
   flex: 1;
   display: flex;

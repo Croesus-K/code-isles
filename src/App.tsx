@@ -307,7 +307,6 @@ export default function App() {
               onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
               onOpenProfile={() => setScene({ name: 'profile' })}
               onStartReview={() => setScene({ name: 'review' })}
-              onLockedSecret={() => setShowDonate(true)}
               onStartChallenge={
                 challengePoolSize(save, activeCourse) > 0
                   ? () => setScene({ name: 'challenge' })

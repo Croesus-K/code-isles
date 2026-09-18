@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CourseDef } from '../content/course'
-import { clearedCount, isRegionUnlocked, levelCleared } from '../core/progress'
+import { clearedCount, isRegionUnlocked, isRegionVisibleOnMap, levelCleared } from '../core/progress'
 import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
 import { copyTextToClipboard } from '../core/clipboard'
@@ -20,8 +20,6 @@ interface Props {
   onStartChallenge?: () => void
   /** 点击错题本 banner 上的"去复习"按钮时调用 */
   onStartReview?: () => void
-  /** 点击锁定的隐藏区域卡时调用（打开打赏弹窗输密钥） */
-  onLockedSecret?: () => void
 }
 
 export function WorldMap({
@@ -31,7 +29,6 @@ export function WorldMap({
   onOpenProfile,
   onStartChallenge,
   onStartReview,
-  onLockedSecret,
 }: Props) {
   // localStorage 用于错题复习 banner 的"暂不提醒"7 天冷却
   const storage: Pick<Storage, 'getItem' | 'setItem'> | null =
@@ -177,40 +174,29 @@ export function WorldMap({
       <PixelPanel title={t('panel.worldMap')}>
         <div className="stack">
           {course.regions.map((region, i) => {
+            // 秘境岛在密钥激活前不渲染——只存在于课程数据末尾，激活后浮出
+            if (!isRegionVisibleOnMap(save, course, i)) return null
             const unlocked = isRegionUnlocked(save, course, i)
             const done = clearedCount(save, region)
             const total = region.levels.length
             const allDone = total > 0 && done === total
             const regionWrong = wrongByRegion.get(region.id)
-            // 隐藏区域未解锁：卡片可点（打开打赏弹窗输密钥），但不进入区域
-            const secretLocked = region.hidden && !unlocked
             return (
               <PixelButton
                 key={region.id}
                 variant="ghost"
-                className={`region-card${region.hidden ? ' region-card--secret' : ''}${secretLocked ? ' region-card--secret-locked' : ''}`}
-                disabled={!unlocked && !secretLocked}
-                onClick={() => {
-                  if (secretLocked) {
-                    audio.play('click')
-                    onLockedSecret?.()
-                    return
-                  }
-                  onEnter(i)
-                }}
+                className={`region-card${region.hidden ? ' region-card--secret' : ''}`}
+                disabled={!unlocked}
+                onClick={() => onEnter(i)}
               >
                 <span className="region-card__info">
-                  <span className="region-card__name">
-                    {secretLocked ? `? · ${region.name}` : `${region.id} · ${region.name}`}
-                  </span>
+                  <span className="region-card__name">{`${region.id} · ${region.name}`}</span>
                   <span className="region-card__meta">
                     {region.comingSoon
                       ? t('meta.building')
-                      : secretLocked
-                        ? '打赏解锁 · 凭专属密钥进入'
-                        : unlocked
-                          ? t('meta.regionTag', { done, total, tagline: region.tagline })
-                          : t('meta.lockedHint')}
+                      : unlocked
+                        ? t('meta.regionTag', { done, total, tagline: region.tagline })
+                        : t('meta.lockedHint')}
                   </span>
                 </span>
                 <span className="region-card__right">
@@ -225,13 +211,11 @@ export function WorldMap({
                   <span className={`badge ${!unlocked ? 'badge--locked' : allDone ? 'badge--done' : ''}`}>
                     {region.comingSoon
                       ? t('badge.building')
-                      : secretLocked
-                        ? '🔒 密钥'
-                        : allDone
-                          ? t('badge.completed')
-                          : unlocked
-                            ? t('badge.available')
-                            : t('badge.locked')}
+                      : allDone
+                        ? t('badge.completed')
+                        : unlocked
+                          ? t('badge.available')
+                          : t('badge.locked')}
                   </span>
                 </span>
               </PixelButton>

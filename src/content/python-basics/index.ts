@@ -10,8 +10,8 @@ import { region5 } from './region5'
  *
  * 题目内容不在客户端 bundle 里——只有持在册密钥调通 /api/secret/unlock
  * 后，Worker 才把完整 RegionDef 下发，App 用 withSecretRegion 把这个
- * levels 为空的 stub 原位替换成可玩区域。stub 的作用只是让世界地图
- * 始终有一张"🔒 密钥"占位卡当 teaser。
+ * levels 为空的 stub 原位替换成可玩区域。激活前 stub 只挂载在课程
+ * 数据末尾，世界地图上完全不显示（isRegionVisibleOnMap 把关）。
  */
 export const secretStubPython: RegionDef = {
   id: '6',
