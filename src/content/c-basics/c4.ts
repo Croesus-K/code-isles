@@ -1,0 +1,311 @@
+import type { RegionDef } from '../course'
+
+/**
+ * 区域 4：指针灯塔（C 基础，C 课程毕业区域）
+ *
+ * c4-1 取地址与解引用 → c4-2 函数与传值/swap → c4-3 指针与数组、生命周期，
+ * Boss 关为整门 C 基础的毕业测验。所有 C 代码均已用 gcc -std=c99 -Wall 真机验算。
+ */
+export const regionC4: RegionDef = {
+  id: 'c4',
+  name: '指针灯塔',
+  tagline: '灯塔照亮变量的住址',
+  levels: [
+    // ============ c4-1 取地址与解引用 ============
+    {
+      id: 'c4-1',
+      name: '点亮第一盏地址灯',
+      xp: 40,
+      gold: 14,
+      learn: {
+        title: '指针初亮：每个变量都有住址',
+        body: [
+          '变量都住在内存里，& 能查出它的住址：&gold 就是 gold 的地址。指针是专门存地址的变量：int *p = &gold; 读作「p 指向 gold」。',
+          "* 是开锁的钥匙：*p 沿着 p 存的地址找到变量本尊，既能读也能写——*p = 99 等于把 99 写进 gold。注意声明里的 int * 和表达式里的 * 是两回事：前者说「p 是指针」，后者是「顺着地址去拿东西」。",
+          'NULL 是「空指针」，明示 p 什么也不指。解引用 NULL 或没初始化的野指针都是未定义行为——先指对地方，再开锁。',
+        ],
+        code: 'int gold = 50;\nint *p = &gold;      /* p 指向 gold */\n*p = *p + 10;        /* 顺着 p 改 gold */\nprintf("%d\\n", gold);   /* → 60 */',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: '下列哪一行声明了「指向 int 的指针 p」？',
+          options: ['int p;', 'int *p;', 'int &p;', '*int p;'],
+          answerIndex: 1,
+          hint: '声明指针时，* 贴在类型和名字之间。',
+          explain: 'int *p; 声明 p 是「存 int 变量地址」的指针。int p; 只是普通 int；int &p; 是 C++ 的引用写法，C 里不合法；*int p; 顺序写反了。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'int gold = 50;\nint *p = &gold;\n*p = *p + 10;\nprintf("%d", gold);',
+          options: ['50', '60', '10', '一串地址数字'],
+          answerIndex: 1,
+          hint: '*p 就是 gold 本尊。',
+          explain: 'p 存着 gold 的地址，*p 顺着地址找到 gold 本身，所以 *p = *p + 10 等价于 gold = gold + 10，gold 变成 60。全程没碰「gold =」这个式子，gold 却变了——这就是指针的力量。',
+        },
+        {
+          kind: 'choice',
+          prompt: '关于 NULL，下列说法正确的是？',
+          options: [
+            'NULL 指向地址 0，解引用它是安全的',
+            'NULL 表示「不指向任何有效对象」，解引用它是未定义行为',
+            'NULL 是字符串 "NULL"',
+            '把指针赋成 NULL 会让程序立刻报错',
+          ],
+          answerIndex: 1,
+          hint: '它是灯塔里的「此处无灯」牌子。',
+          explain: 'NULL 是空指针常量，明确表示这个指针现在不指向任何变量。解引用 NULL 是未定义行为，通常会当场崩溃。所以用指针前要先确认它指对了地方，常写 if (p != NULL) 再开锁。给指针赋 NULL 本身完全安全，反而是好习惯。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全取地址运算符，让 p 指向 hp：',
+          code: 'int hp = 100;\nint *p = ___hp;\n/* 之后 *p 就是 hp */',
+          answers: ['&'],
+          placeholder: '一个取地址运算符',
+          hint: '查住址用哪个符号？',
+          explain: '& 是取地址运算符，&hp 就是 hp 的内存地址，交给指针 p 存起来。之后 *p 和 hp 指的是同一格内存，改谁都算数。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面两行里，哪一行是危险的未定义行为？',
+          code: ['int *p;', '*p = 5;'],
+          answerLine: 1,
+          hint: 'p 还没指向任何地方就开锁了。',
+          explain: "第 2 行解引用了没初始化的指针（野指针）：p 里只有一段随机的垃圾地址，往 *p 写 5 可能把内存搅得一团糟。gcc 实测也会警告 'p' is used uninitialized。未初始化的指针应先指向有效变量（int *p = &x;）或先置 NULL 再判断。",
+        },
+      ],
+    },
+
+    // ============ c4-2 函数、传值与指针 swap ============
+    {
+      id: 'c4-2',
+      name: '双灯互换仪式',
+      xp: 43,
+      gold: 15,
+      learn: {
+        title: '函数工坊：传值与传地址',
+        body: [
+          '函数是封装好的咒语：返回类型 函数名(参数) { ... }。先用原型登记（int add(int, int);），再给出定义，然后才能调用——编译器从上往下读，调用前必须见过原型或定义。',
+          'C 的参数是「传值」：形参是实参的复印件，改复印件动不了原件。所以在 void f(int x) 里改 x，主调函数毫发无伤。',
+          '想改原件就寄地址：swap(int *a, int *b) 收两个指针，调用时写 swap(&x, &y)，函数里用 *a、*b 直接操作原件——这就是能换动两个数的秘密。',
+        ],
+        code: 'void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n/* 调用：swap(&x, &y); 之后 x、y 真的交换了 */',
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'void ignite(int x) {\n    x = 99;\n}\nint main(void) {\n    int x = 1;\n    ignite(x);\n    printf("%d", x);\n    return 0;\n}',
+          options: ['99', '1', '0', '编译报错'],
+          answerIndex: 1,
+          hint: '形参 x 是复印件。',
+          explain: 'C 传值调用：ignite 收到的 x 是 main 里 x 的一份拷贝，改拷贝动不了原件。函数返回后 main 的 x 还是 1。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\nint main(void) {\n    int m = 3, n = 8;\n    swap(&m, &n);\n    printf("%d %d", m, n);\n    return 0;\n}',
+          options: ['3 8', '8 3', '3 3', '8 8'],
+          answerIndex: 1,
+          hint: '这次寄过去的是地址，函数直接操作原件。',
+          explain: 'swap 收到 m、n 的地址，*a、*b 就是 m、n 本尊：用 t 暂存 *a，*a 接过 *b，*b 再拿回 t，交换完成，输出 8 3。想改调用者的变量，就传它的地址。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这个 swap 编译能通过，却换不动主函数里的两个数（实测输出还是 3 8）。病根在哪一行？',
+          code: ['void swap(int a, int b) {', '    int t = a;', '    a = b;', '    b = t;', '}'],
+          answerLine: 0,
+          hint: '参数收到的是原件，还是复印件？',
+          explain: '第 1 行把参数写成普通 int：传值调用下 a、b 只是复印件，函数里换得再热闹，主函数的变量纹丝不动。正确写法是 void swap(int *a, int *b)，调用时传 swap(&x, &y)，靠地址去操作原件。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全调用处的实参，让 hp 真的被加到 11：',
+          code: 'void bump(int *p) {\n    *p = *p + 1;\n}\nint main(void) {\n    int hp = 10;\n    bump(___);\n    printf("%d", hp);   /* 输出 11 */\n    return 0;\n}',
+          answers: ['&hp'],
+          placeholder: '该寄什么东西过去？',
+          hint: 'bump 要的是地址，不是复印件。',
+          explain: 'bump 的形参是 int *p（指针），必须把 hp 的地址 &hp 传进去，函数里的 *p 才能摸到 main 的 hp。若直接写 bump(hp)，等于把 10 当地址用，gcc 会警告 makes pointer from integer without a cast。',
+        },
+        {
+          kind: 'order',
+          prompt: '把「先登记、再定义、后调用」的函数三步排回正确顺序：',
+          lines: ['int add(int a, int b);', 'int add(int a, int b) {', '    return a + b;', '}', 'int s = add(2, 3);'],
+          hint: '原型以分号结尾；定义带函数体；调用拿返回值。',
+          explain: '第 1 行是原型（只有分号，向编译器登记名字）；第 2–4 行是定义（带函数体，返回 a + b）；最后一行才是调用，把 2 和 3 寄过去、收下返回值 5。调用前编译器必须见过原型或定义。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'int chest(int n) {\n    return n * 2;\n}\nint main(void) {\n    int g = chest(5) + chest(1);\n    printf("%d", g);\n    return 0;\n}',
+          options: ['6', '10', '12', '5'],
+          answerIndex: 2,
+          hint: 'chest 开一次箱子，金子翻倍。',
+          explain: 'chest(5) 返回 10，chest(1) 返回 2，相加得 12。return 把值送回调用处，函数因此能像表达式一样参与运算。',
+        },
+      ],
+    },
+
+    // ============ c4-3 指针与数组、作用域与生命周期 ============
+    {
+      id: 'c4-3',
+      name: '灯链与暗房',
+      xp: 45,
+      gold: 16,
+      learn: {
+        title: '灯链与暗房：指针、数组与生命周期',
+        body: [
+          '数组名在表达式里会退化成首元素地址：int *p = a; 之后 a[i] 完全等价于 *(a + i)——下标只是指针算术的友好写法。p + 1 不是地址加 1 字节，而是前进 1 个元素。',
+          '指针也能用下标：p[2] 就是 *(p + 2)。下标写法和指针写法随便挑，编译结果一模一样。',
+          '变量有寿命：函数里的局部变量在函数返回时就消亡。返回局部变量的地址，等于把已经拆掉的房间的门牌递给别人——悬垂指针，解引用它是未定义行为。',
+        ],
+        code: 'int a[3] = {2, 4, 6};\nint *p = a;\nprintf("%d\\n", *(p + 1));   /* → 4，同 a[1] */\nprintf("%d\\n", p[2]);       /* → 6，同 *(a + 2) */',
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'int a[4] = {5, 10, 15, 20};\nint *p = a;\nprintf("%d", *(p + 2));',
+          options: ['10', '15', '20', '编译报错'],
+          answerIndex: 1,
+          hint: 'p + 2 前进了两格，不是两字节。',
+          explain: '数组名 a 退化成首元素地址赋给 p；指针加 2 是前进 2 个元素，指向 a[2]；*(p + 2) 解引用取出 15。int 占 4 字节，地址实际加了 8 字节——C 会按元素大小帮你换算好。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'a 是数组名，a[i] 与下列哪个表达式完全等价？',
+          options: ['*(a + i)', '*a + i', 'a + i', '&a[i]'],
+          answerIndex: 0,
+          hint: '先顺着地址走 i 格，再开锁。',
+          explain: 'a[i] 就是 *(a + i)：先取首地址，前进 i 个元素，再解引用。*a + i 是「先取 a[0] 再加 i」，意思完全不同；a + i 只是地址、还没开锁；&a[i] 是 a[i] 的地址。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'int a[3] = {2, 4, 6};\nprintf("%d %d", *a, a[1]);',
+          options: ['2 4', '4 6', '2 2', '编译报错'],
+          answerIndex: 0,
+          hint: '光杆数组名 a 是首元素地址，*a 就是 a[0]。',
+          explain: '*a 等价于 *(a + 0)，即 a[0]，输出 2；a[1] 是 4。数组名不加下标时代表首元素地址——这是指针与数组血缘关系的起点。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全下标，用指针变量 p 按下标方式打印出 4：',
+          code: 'int a[5] = {1, 2, 3, 4, 5};\nint *p = a;\nprintf("%d", p[___]);   /* 输出 4 */',
+          answers: ['3'],
+          placeholder: '一个数字下标',
+          hint: '4 在第 4 格，下标从 0 数。',
+          explain: '指针也能用下标：p[3] 完全等价于 *(p + 3)，取出 a[3] 即 4。p[i] 与 a[i] 在这里可以互换——下标写法本来就是指针算术的糖衣。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面这个「制灯函数」埋着一颗定时炸弹，在哪一行？',
+          code: ['int *make_lamp(void) {', '    int x = 42;', '    return &x;', '}'],
+          answerLine: 2,
+          hint: '函数一返回，x 就消失了。',
+          explain: '第 3 行返回了局部变量 x 的地址。x 在函数返回时就被销毁，这地址成了「悬垂指针」，谁解引用谁是未定义行为。gcc 实测也会警告：function returns address of local variable。要往外送值，可以学上一关的 swap——用指针参数把结果写回调用者的变量。',
+        },
+      ],
+    },
+
+    // ============ c4-B Boss：指针灯塔大测验 ============
+    {
+      id: 'c4-B',
+      name: '指针灯塔大测验',
+      xp: 100,
+      gold: 40,
+      boss: true,
+      learn: {
+        title: 'Boss：指针灯塔大测验（C 课程毕业测验）',
+        body: [
+          '这一关没有新知识，9 道题是整门 C 基础的毕业测验：指针与解引用、函数与传值、指针换 swap、指针与数组一家亲、作用域与生命周期，全部会考。答错当场有解析。',
+          '全对零提示拿下 ★★★，C 基础课程就此通关。灯塔已全部点亮，出航吧，岛主！',
+        ],
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'int mana = 20;\nint *p = &mana;\n*p *= 2;\nprintf("%d", mana);',
+          options: ['20', '40', '10', '编译报错'],
+          answerIndex: 1,
+          hint: '*p *= 2 就是把 mana 翻倍。',
+          explain: 'p 指向 mana，*p *= 2 等价于 mana = mana * 2，所以 mana 变成 40。解引用不仅能读能写，还能配 +=、*= 这类复合赋值一起用。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'int a[5]; int *p = a; 那么 p + 3 指向哪里？',
+          options: ['a[3] 的地址', 'a[3] 的值', 'a 的地址往后第 3 个字节', '这是非法运算'],
+          answerIndex: 0,
+          hint: '指针算术按「元素个数」前进。',
+          explain: '指针加整数按元素大小前进：p + 3 就是 &a[3]。若 int 占 4 字节，实际地址加了 12 字节，但 C 帮你换算好了。「a[3] 的值」要写 *(p + 3) 才对——差一把开锁的 *。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段代码运行后输出什么？',
+          code: 'void trade(int *x, int *y) {\n    int t = *x;\n    *x = *y;\n    *y = t;\n}\nint main(void) {\n    int a = 2, b = 7;\n    trade(&a, &b);\n    printf("%d", a * 10 + b);\n    return 0;\n}',
+          options: ['27', '72', '2 7', '编译报错'],
+          answerIndex: 1,
+          hint: '先想清楚交换后 a、b 各是多少。',
+          explain: 'trade 收地址换原件，调用后 a = 7、b = 2，a * 10 + b = 72。指针参数是 C 里函数影响外界的主要通道。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全函数体，让治疗术通过指针真正生效：',
+          code: 'void heal(int *hp) {\n    ___ = *hp + 30;\n}\nint main(void) {\n    int hp = 60;\n    heal(&hp);\n    printf("%d", hp);   /* 输出 90 */\n    return 0;\n}',
+          answers: ['*hp'],
+          placeholder: '往哪里写才能改到原件？',
+          hint: '要顺着指针开锁写入。',
+          explain: '形参 hp 是指针，*hp 就是调用者的变量本尊。*hp = *hp + 30 通过地址把 90 写回去，main 的 hp 真的变成 90。漏掉 * 的话，改的只是指针自己的拷贝，什么也治不了。',
+        },
+        {
+          kind: 'bug',
+          prompt: '下面四行里，哪一行是危险的未定义行为？',
+          code: ['int main(void) {', '    int *p = NULL;', '    printf("%d", *p);', '    return 0;', '}'],
+          answerLine: 2,
+          hint: '开锁之前，先看 p 有没有指对地方。',
+          explain: '第 3 行解引用 NULL：NULL 明确表示「不指向任何变量」，顺着它开锁是未定义行为，程序通常当场崩溃。正确姿势是先判断 if (p != NULL) 再解引用。',
+        },
+        {
+          kind: 'order',
+          prompt: '把「用指针修改一个变量」的最小仪式排回正确顺序（hp 初始为 5）：',
+          lines: ['int hp = 5;', 'int *p = &hp;', '*p = *p + 3;', 'printf("%d", hp);'],
+          hint: '先有变量，再有指针，然后才轮到开锁写值。',
+          explain: '顺序：先声明变量 hp；再让 p 指向它；*p = *p + 3 顺着地址把 hp 改成 8；最后打印 hp 得 8。每一步都依赖上一步的产物，乱了就编译不过或行为不对。',
+        },
+        {
+          kind: 'output',
+          prompt: '两种「设值函数」一对比，这段代码运行后输出什么？',
+          code: 'void set1(int x) { x = 100; }\nvoid set2(int *x) { *x = 100; }\nint main(void) {\n    int a = 0, b = 0;\n    set1(a);\n    set2(&b);\n    printf("%d %d", a, b);\n    return 0;\n}',
+          options: ['100 100', '0 0', '0 100', '100 0'],
+          answerIndex: 2,
+          hint: '一个收复印件，一个收地址。',
+          explain: 'set1 传值，改的是拷贝，a 依旧是 0；set2 传地址，*x 直接改到 b，b 变成 100。输出 0 100——这就是传值与传指针的分水岭。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全第二个实参，和第一个一起打印出「6 3」（下标或指针算术都行）：',
+          code: 'int a[4] = {9, 6, 3, 0};\nint *p = a;\nprintf("%d %d", *(p + 1), ___);',
+          answers: ['p[2]', '*(p + 2)', '*(p+2)', 'a[2]', '*(a + 2)', '*(a+2)'],
+          placeholder: '指向 a[2] 的任何等价写法',
+          hint: '3 在下标 2 的格子里，下标和指针算术随你挑。',
+          explain: 'p[2]、*(p + 2)、a[2]、*(a + 2) 完全等价，取出的都是 a[2] 的 3。指针和数组在这里是一家：下标就是指针算术的糖衣。',
+        },
+        {
+          kind: 'choice',
+          prompt: '毕业答辩：下列说法正确的是？',
+          options: [
+            '数组之间可以用 = 整体复制',
+            '解引用 NULL、野指针或悬垂指针都属于未定义行为',
+            '函数里修改普通形参会影响主调函数的变量',
+            "strlen 返回的长度包含结尾的 '\\0'",
+          ],
+          answerIndex: 1,
+          hint: '四句话里只有一句经得起 gcc 和标准的推敲。',
+          explain: "B 正确：这三种解引用都是未定义行为，轻则读到垃圾值，重则程序崩溃。A 错，数组不能整体赋值，gcc 会报错；C 错，普通形参是复印件，传指针才改得到原件；D 错，strlen 不统计 '\\0'。恭喜通过毕业测验——灯塔全线点亮，C 基础课程圆满出航！",
+        },
+      ],
+    },
+  ],
+}

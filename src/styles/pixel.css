@@ -792,6 +792,13 @@ body {
   border-color: var(--c-gold);
 }
 
+/* 秘境岛未解锁引导（独立课程锁定门） */
+.secret-gate__text {
+  color: var(--c-ink);
+  font-size: 14px;
+  margin: 4px 0 12px;
+}
+
 .region-card__info {
   flex: 1;
   display: flex;

@@ -1,0 +1,317 @@
+import type { RegionDef } from '../course'
+
+/**
+ * 区域 4：远洋舰队（现代 C++ 特性：auto / 函数重载与默认参数 / 异常与智能指针）
+ *
+ * 每关 6 题，五种题型混排（每关至少各 1 填空与 1 改错），Boss 关 9 题全线综合，
+ * 兼作整个 C++ 课程的毕业测验。所有题目代码已在 g++ 8.1.0（-std=c++14 -Wall）
+ * 下真机验算。区域 id 用 cpp 前缀，与 cpp1～cpp3 及 Python、JS 课程互不冲突。
+ */
+export const regionCpp4: RegionDef = {
+  id: 'cpp4',
+  name: '远洋舰队',
+  tagline: '现代特性让舰队自动巡航',
+  levels: [
+    // ============ cpp4-1 auto + 范围 for ============
+    {
+      id: 'cpp4-1',
+      name: '自动罗盘',
+      xp: 42,
+      gold: 14,
+      learn: {
+        title: 'auto：让编译器替你写类型',
+        body: [
+          'auto n = 7; 不用手写 int——编译器看右边的初始值，自动把 n 定成 int。auto price = 2.5; 推成 double；auto name = string("Sea"); 推成 string。类型一个没少，只是编译器代笔。',
+          '两条规矩：auto 必须当场初始化（auto a; 编译器推不出来，直接报错）；想要 string 别写 auto s = "Code"——引号串会推成 const char*，没有 .size() 这些成员，要用 string("...") 包一层。',
+          '范围 for 配 auto 最顺手：for (auto x : v) 是拷贝一份逐个看；for (auto& x : v) 里的 & 是引用（cpp1 镜像舱的老朋友），循环里改 x 就是改舱里的原件。',
+        ],
+        code: '#include <iostream>\n#include <string>\n#include <vector>\nusing namespace std;\n\nint main() {\n    auto n = 7;                  // 看右边 → 推成 int\n    auto price = 2.5;            // 推成 double\n    auto name = string("Sea");   // 推成 string\n    cout << n + price << endl;   // → 9.5\n    cout << name.size() << endl; // → 3\n\n    vector<int> v;\n    v.push_back(1);\n    v.push_back(2);\n    v.push_back(3);\n    for (auto x : v) {           // auto 配范围 for 最顺手\n        cout << x << " ";        // → 1 2 3\n    }\n    cout << endl;\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'auto 的本事是？',
+          options: ['看右边的初始值，自动推导变量类型', '让变量什么类型都能装', '自动释放内存', '让程序跑得更快'],
+          answerIndex: 0,
+          hint: '类型还在，只是不用你亲笔写。',
+          explain: 'auto n = 7; 里 n 就是 int——编译器根据初始值 7 推导出来的。类型没消失也没变万能，只是书写省事；自动清理内存是智能指针（下一关见）的活。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    auto n = 7;\n    auto price = 2.5;\n    auto name = string("Sea");\n    cout << n + price << endl;\n    cout << name.size() << endl;\n    return 0;\n}',
+          options: ['两行：9.5 / 3', '两行：9 / 3', '两行：9.5 / Sea', '报错'],
+          answerIndex: 0,
+          hint: 'int 和 double 相加，会先统一成谁？',
+          explain: 'auto n = 7 推成 int，auto price = 2.5 推成 double；int + double 先统一成 double，7 + 2.5 = 9.5。name 被推成 string，size() 是 3。类型一个没少，只是编译器代笔。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全关键字，让编译器自己推 x 的类型：',
+          code: 'vector<int> v;\nv.push_back(1);\nv.push_back(2);\nv.push_back(3);\nint sum = 0;\nfor (___ x : v) {\n    sum += x;\n}\ncout << sum << endl;   // → 6',
+          answers: ['auto'],
+          placeholder: '四个字母的关键字',
+          hint: '类型让编译器代劳。',
+          explain: 'for (auto x : v) 里 auto 让编译器根据 v 的元素类型推出 x 是 int，等价于 for (int x : v)。vector 以后换成装 double，这一行不用改——这就是 auto 的省心之处。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', 'using namespace std;', 'int main() {', '    auto s = "Code";', '    cout << s.size() << endl;', '    return 0;', '}'],
+          answerLine: 4,
+          hint: 'auto 会诚实地把 s 推成引号串的本命类型。',
+          explain: '第 5 行 auto s = "Code"; 把 s 推成 const char*（C 风格字符串），它没有 .size() 这些成员函数，编译器报 request for member \'size\' in \'s\', which is of non-class type \'const char*\'。想要 string，写 string s = "Code"; 或 auto s = string("Code");。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    vector<int> v;\n    v.push_back(1);\n    v.push_back(2);\n    v.push_back(3);\n    for (auto& x : v) {\n        x = x * 10;\n    }\n    cout << v[0] << v[1] << v[2] << endl;\n    return 0;\n}',
+          options: ['102030', '123', '10 20 30', '报错'],
+          answerIndex: 0,
+          hint: 'auto& 摸到的是原件还是复印件？',
+          explain: 'auto& x 是引用：x 是舱里原件的别名，x = x * 10 把 1、2、3 逐个放大成 10、20、30。如果写成 auto x，改的只是拷贝，v 纹丝不动。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'for (auto x : v) 和 for (auto& x : v) 的区别是？',
+          options: ['auto x 是拷贝，改它不动原件；auto& x 是引用，改它就是改原件', '两者完全一样', 'auto& 会把整个 vector 复制一份', 'auto 不能用在范围 for 里'],
+          answerIndex: 0,
+          hint: '回望 cpp1 的镜像舱：& 是别名。',
+          explain: 'auto x 每轮拷贝一件货，随便改也不影响 v；auto& x 是原件的别名，改它就是改 v。想边遍历边改，用 auto&；只想看看，用 auto 更安全。',
+        },
+      ],
+    },
+
+    // ============ cpp4-2 函数重载 + 默认参数 ============
+    {
+      id: 'cpp4-2',
+      name: '多面水手',
+      xp: 43,
+      gold: 15,
+      learn: {
+        title: '函数重载与默认参数：一人多职的水手',
+        body: [
+          '同名函数、参数列表不同（个数或类型不同），就是重载：int fire(int) 和 int fire(int, int) 可以并存。调用时编译器按你传的实参，自动挑最匹配的那个版本。',
+          '默认参数：void sail(int speed = 3)——调用时不传，speed 自动用 3；传了就用你的。带默认值的参数必须从右往左连续排，不能跳着给。',
+          '注意：只有返回值类型不同不算重载（int f(int) 和 double f(int) 共存会编译报错）——编译器挑函数时根本不看返回值。重载加默认参数，都让调用方只记一个名字。',
+        ],
+        code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nint fire(int damage) {            // 版本一：单发\n    return damage;\n}\nint fire(int damage, int count) { // 版本二：连发——参数个数不同\n    return damage * count;\n}\ndouble fire(double damage) {      // 版本三：魔法弹——参数类型不同\n    return damage * 2;\n}\nvoid sail(int speed = 3) {        // 默认参数：不传就用 3\n    cout << "航速 " << speed << endl;\n}\n\nint main() {\n    cout << fire(5) << endl;      // → 5（1 个 int → 版本一）\n    cout << fire(5, 4) << endl;   // → 20（2 个 int → 版本二）\n    cout << fire(1.5) << endl;    // → 3（double → 版本三）\n    sail();                       // → 航速 3（用默认值）\n    sail(10);                     // → 航速 10（覆盖默认值）\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'int f(int) 和 double f(int) 同名同参数、只差返回值类型，能构成重载吗？',
+          options: ['不能——重载靠参数列表区分，只差返回值会编译报错', '能——返回值不同就能区分', '能——但调用时必须写明返回类型', '不能——C++ 里函数名不允许重复出现'],
+          answerIndex: 0,
+          hint: '编译器挑函数时，根本不看返回值。',
+          explain: '重载靠参数列表（个数或类型）区分。只有返回值不同，调用 f(3) 时编译器无法判断你要哪个，直接报 ambiguating new declaration。同名函数想并存，参数列表必须不同。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\nusing namespace std;\nint fire(int damage) {\n    return damage;\n}\nint fire(int damage, int count) {\n    return damage * count;\n}\nint main() {\n    cout << fire(5) << endl;\n    cout << fire(5, 4) << endl;\n    return 0;\n}',
+          options: ['两行：5 / 20', '两行：5 / 9', '两行：20 / 5', '报错'],
+          answerIndex: 0,
+          hint: '实参几个？编译器据此挑版本。',
+          explain: 'fire(5) 传 1 个 int → 单参版本，返回 5；fire(5, 4) 传 2 个 int → 双参版本，5 × 4 = 20。编译器按实参个数自动挑版本，调用方只记一个名字。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全默认值写法——不传航速就默认 3：',
+          code: 'void sail(int speed ___ 3) {\n    cout << "航速 " << speed << endl;\n}\n// sail();   → 航速 3\n// sail(9);  → 航速 9',
+          answers: ['='],
+          placeholder: '一个运算符',
+          hint: '和给变量赋初值一个写法。',
+          explain: '默认参数就是给形参赋个初值：int speed = 3。调用时不传就用 3，传了就用实参。注意带默认值的参数要排在参数列表的末尾。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', 'using namespace std;', 'int gold(int n) {', '    return n;', '}', 'double gold(int n) {', '    return n * 0.5;', '}', 'int main() {', '    cout << gold(4) << endl;', '    return 0;', '}'],
+          answerLine: 5,
+          hint: '两个 gold 的参数列表先比一比。',
+          explain: '第 6 行的 double gold(int) 和第 3 行的 int gold(int) 参数完全相同、只差返回值。调用 gold(4) 时编译器分不清要哪个，报 ambiguating new declaration of \'double gold(int)\'。重载的关键是参数列表不同。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nvoid report(string captain, int gold = 10) {\n    cout << captain << " 有 " << gold << " 金币" << endl;\n}\nint main() {\n    report("Storm");\n    report("Wave", 99);\n    return 0;\n}',
+          options: ['两行：Storm 有 10 金币 / Wave 有 99 金币', '两行：Storm 有 99 金币 / Wave 有 10 金币', '一行：Storm 有 10 金币', '报错'],
+          answerIndex: 0,
+          hint: '第二个参数没传时，谁顶上？',
+          explain: 'report("Storm") 没传第二个参数，gold 用默认值 10；report("Wave", 99) 传了 99，默认值让位。默认参数 = 「你不给，我用备胎」。',
+        },
+        {
+          kind: 'order',
+          prompt: '把「默认航速的帆船」排好：',
+          lines: ['void sail(int speed = 3) { cout << "航速 " << speed << endl; }', 'int main() {', '    sail();', '    sail(10);', '    return 0;', '}'],
+          hint: '函数定义要出现在调用之前；先喊一次不带参的。',
+          explain: 'C++ 从上往下编译，sail 的定义要放在 main 之前（调用点之前）。main 里 sail() 不传参用默认 3，sail(10) 覆盖成 10。',
+        },
+      ],
+    },
+
+    // ============ cpp4-3 异常 + unique_ptr ============
+    {
+      id: 'cpp4-3',
+      name: '风暴预案',
+      xp: 44,
+      gold: 16,
+      learn: {
+        title: '异常与智能指针：风暴预案与自动收锚',
+        body: [
+          '异常是程序的「风暴预案」：出事时 throw runtime_error("信息"); 把异常扔出去，函数立刻中断；外面的 try { ... } 块里放可能出事的代码，catch (const exception& e) 负责接住，e.what() 能拿到那条信息。',
+          'throw 之后，try 块里剩下的代码不再执行，直接跳进 catch；catch 处理完，程序从 catch 后面继续正常跑，不会崩。runtime_error 需要 #include <stdexcept>。',
+          'unique_ptr（#include <memory>）是智能指针：new 出来的内存由它独占（unique = 独一无二，不能复制分身），它离开作用域的那一刻自动释放内存，专治忘写 delete 的内存泄漏。感受一下写法：unique_ptr<int> p(new int(42)); 之后像普通指针一样 *p 取值，释放的事交给它自己。',
+        ],
+        code: '#include <iostream>\n#include <stdexcept>\n#include <string>\nusing namespace std;\n\nint divide(int a, int b) {\n    if (b == 0) {\n        throw runtime_error("分母不能为 0");  // 扔出异常，函数立刻中断\n    }\n    return a / b;\n}\n\nint main() {\n    try {\n        cout << divide(10, 2) << endl;   // → 5\n        cout << divide(10, 0) << endl;   // 出事！直接跳进 catch\n        cout << "不会执行到这里" << endl;\n    } catch (const exception& e) {       // 接住：基类一网打尽\n        cout << "警报：" << e.what() << endl;  // → 警报：分母不能为 0\n    }\n    return 0;                            // 处理完，程序正常收尾\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'unique_ptr 的招牌特性是？',
+          options: ['独占内存，离开作用域自动释放，不怕忘写 delete', '可以随意复制成好几个分身', '指向的内存永远不释放', '必须手动 delete 才能释放'],
+          answerIndex: 0,
+          hint: 'unique = 独一无二：一条船一位船长。',
+          explain: 'unique_ptr 独占它管理的对象，不能复制；当它离开作用域（比如函数结束）时自动释放内存——这就是「智能」所在，专治忘写 delete 导致的内存泄漏。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <stdexcept>\nusing namespace std;\nint divide(int a, int b) {\n    if (b == 0) {\n        throw runtime_error("分母不能为 0");\n    }\n    return a / b;\n}\nint main() {\n    try {\n        cout << divide(10, 2) << endl;\n        cout << divide(10, 0) << endl;\n        cout << "继续航行" << endl;\n    } catch (const runtime_error& e) {\n        cout << "警报：" << e.what() << endl;\n    }\n    return 0;\n}',
+          options: ['两行：5 / 警报：分母不能为 0', '三行：5 / 警报：分母不能为 0 / 继续航行', '一行：5', '直接崩溃，什么都不输出'],
+          answerIndex: 0,
+          hint: 'throw 之后，try 里剩下的代码还轮得到吗？',
+          explain: 'divide(10, 2) 平安返回 5；divide(10, 0) 里 b == 0 成立，throw 把异常扔出，函数立刻中断——try 里剩下的「继续航行」不再执行，直接跳进 catch，输出「警报：」加 e.what() 里的信息。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全关键字，把扔出来的异常接住：',
+          code: 'try {\n    divide(10, 0);   // 里面会 throw\n} ___ (const runtime_error& e) {\n    cout << e.what() << endl;\n}',
+          answers: ['catch'],
+          placeholder: '五个字母的关键字',
+          hint: 'try 扔，谁来接？',
+          explain: 'catch (const runtime_error& e) 紧跟在 try 块后面，负责接住 throw 扔出的异常，e.what() 拿到错误信息。try 和 catch 必须成对出现。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段代码想接住异常，却编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <stdexcept>', 'using namespace std;', 'int main() {', '    catch (const runtime_error& e) {', '        cout << e.what() << endl;', '    }', '    return 0;', '}'],
+          answerLine: 4,
+          hint: 'catch 想上岗，先得有人叫它。',
+          explain: '第 5 行 catch 孤零零地出现——catch 必须紧跟在 try 块后面，不能单独使用，编译器报 expected primary-expression before \'catch\'。try 和 catch 是成对的预案，缺一不可。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <stdexcept>\nusing namespace std;\nint main() {\n    try {\n        cout << "起航" << endl;\n        throw runtime_error("风暴");\n    } catch (const runtime_error& e) {\n        cout << "躲进港口：" << e.what() << endl;\n    }\n    cout << "重新出发" << endl;\n    return 0;\n}',
+          options: ['三行：起航 / 躲进港口：风暴 / 重新出发', '两行：起航 / 躲进港口：风暴', '三行：起航 / 重新出发 / 躲进港口：风暴', '程序崩溃'],
+          answerIndex: 0,
+          hint: 'catch 接住之后，程序从哪里继续跑？',
+          explain: '先输出「起航」；throw 一出手，try 里剩余代码全部跳过，直接进 catch 输出「躲进港口：风暴」；catch 处理完，程序从 catch 后面继续，输出「重新出发」。风暴被接住，船不会沉。',
+        },
+        {
+          kind: 'order',
+          prompt: '把风暴预案的骨架排好：',
+          lines: ['try {', '    cout << divide(10, 0) << endl;', '} catch (const runtime_error& e) {', '    cout << e.what() << endl;', '}'],
+          hint: 'try 里放险棋，catch 紧贴其后负责接。',
+          explain: 'try { 可能出事的代码 } catch (异常类型 引用) { 处理 }——catch 必须紧跟 try 块，中间不能插别的语句。出事时从 throw 点直接跳进 catch。',
+        },
+      ],
+    },
+
+    // ============ cpp4-B Boss：远洋舰队毕业测验 ============
+    {
+      id: 'cpp4-B',
+      name: '远洋舰队大测验',
+      xp: 100,
+      gold: 40,
+      boss: true,
+      learn: {
+        title: 'Boss：远洋舰队全线复习（C++ 课程毕业测验）',
+        body: [
+          '这一关没有新知识。9 道题横扫三关：auto 与范围 for、函数重载与默认参数、异常与智能指针，还顺路回望 vector——这就是你整个 C++ 课程的毕业卷。',
+          '全对零提示拿满奖励。通过这一关，你在代码群岛的 C++ 航线就全部点亮了，船长！',
+        ],
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    auto n = 4;\n    auto s = string("Ship");\n    cout << n * 2 << " " << s.size() << endl;\n    return 0;\n}',
+          options: ['8 4', '4 8', '8 Ship', '报错'],
+          answerIndex: 0,
+          hint: 'auto 各推成什么类型？',
+          explain: 'auto n = 4 推成 int，4 × 2 = 8；auto s = string("Ship") 推成 string，size() 是 4。输出「8 4」。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    vector<int> v;\n    v.push_back(2);\n    v.push_back(5);\n    for (auto& x : v) {\n        x = x * 2;\n    }\n    int total = 0;\n    for (auto x : v) {\n        total += x;\n    }\n    cout << total << endl;\n    return 0;\n}',
+          options: ['14', '7', '28', '报错'],
+          answerIndex: 0,
+          hint: '第一轮改原件，第二轮做累加。',
+          explain: '第一轮 auto& x 直接改舱里原件：2、5 翻倍成 4、10；第二轮 auto x 只读拷贝做累加：4 + 10 = 14。auto& 会改、auto 只看，一攻一守。',
+        },
+        {
+          kind: 'choice',
+          prompt: '编译器在多个重载函数里挑哪一个执行，看的是？',
+          options: ['实参的个数和类型', '函数的返回值类型', '函数定义的先后顺序', '变量名的长短'],
+          answerIndex: 0,
+          hint: '传入什么货，就走哪条匹配的流水线。',
+          explain: 'fire(5) 走 int 单参版本，fire(5, 4) 走两参版本，fire(1.5) 走 double 版本——全凭实参的个数和类型匹配。返回值不参与选择，定义顺序也不影响。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nvoid anchor(string port = "母港") {\n    cout << "抛锚：" << port << endl;\n}\nint main() {\n    anchor();\n    anchor("风暴湾");\n    return 0;\n}',
+          options: ['两行：抛锚：母港 / 抛锚：风暴湾', '两行：抛锚：风暴湾 / 抛锚：母港', '两行：抛锚： / 抛锚：风暴湾', '报错'],
+          answerIndex: 0,
+          hint: '第一次调用没传参。',
+          explain: 'anchor() 不传参，port 用默认值「母港」；anchor("风暴湾") 传入实参，覆盖默认值。默认参数 = 「你不给，我用备胎」。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全关键字——分母为 0 时把异常扔出去：',
+          code: 'int divide(int a, int b) {\n    if (b == 0) {\n        ___ runtime_error("分母不能为 0");\n    }\n    return a / b;\n}',
+          answers: ['throw'],
+          placeholder: '五个字母的关键字',
+          hint: '像投掷标枪一样把异常丢出去。',
+          explain: 'throw runtime_error("信息"); 造出一个异常对象并扔出，函数立刻中断，交给外层最近的 catch 接住。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全关键字——用基类接住所有标准异常：',
+          code: 'try {\n    divide(10, 0);\n} catch (___ std::exception& e) {\n    cout << e.what() << endl;\n}',
+          answers: ['const'],
+          placeholder: '五个字母的关键字',
+          hint: '异常对象只读不改，用…',
+          explain: 'catch (const std::exception& e) 用基类的常量引用接住：const 表示只读，引用避免拷贝；runtime_error 是 exception 的派生类，都能被这一网接住。这是标准异常的惯用抓法。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', 'using namespace std;', 'void sail(int speed = 3, int crew) {', '    cout << speed << " " << crew << endl;', '}', 'int main() {', '    sail(5);', '    return 0;', '}'],
+          answerLine: 2,
+          hint: '默认值排在前面，后面的参数怎么办？',
+          explain: '第 3 行给 speed 设了默认值 3，但它后面还有没默认值的 crew——带默认值的参数必须从右往左连续给，编译器报 default argument missing for parameter 2。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'unique_ptr 离开作用域的那一刻，会发生什么？',
+          options: ['它管理的内存自动释放，无需手动 delete', '内存悄悄泄漏', '指针继续存活', '程序报错退出'],
+          answerIndex: 0,
+          hint: '自动收锚，不用船长动手。',
+          explain: 'unique_ptr 离开作用域时自动释放它管理的内存——资源跟着对象走，对象没了资源自动归还。舰队毕业快乐，船长！',
+        },
+        {
+          kind: 'order',
+          prompt: '把「除零风暴预案」的函数排好：',
+          lines: ['int divide(int a, int b) {', '    if (b == 0) {', '        throw runtime_error("除零");', '    }', '    return a / b;', '}'],
+          hint: '先判险情（if），险情就 throw，平安才返回结果。',
+          explain: '骨架：进入函数先检查 b == 0，是就 throw 扔出异常（函数立刻中断）；否则 return a / b。检查在前、计算在后，异常才有机会在出错前被扔出去。',
+        },
+      ],
+    },
+  ],
+}

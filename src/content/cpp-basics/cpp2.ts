@@ -1,0 +1,316 @@
+import type { RegionDef } from '../course'
+
+/**
+ * 区域 2：造船厂（C++ 面向对象入门）
+ *
+ * 每关 6 题 = 2 选择 + 2 输出 + 1 填空 + 1 改错（或排序），Boss 关 9 题全线综合。
+ * 所有题目代码已在 g++ 8.1.0（-std=c++14）下真机验算。区域 id 用 cpp 前缀，
+ * 与区域 1（cpp1）及 Python、JS 课程在错题本中互不冲突。
+ */
+export const regionCpp2: RegionDef = {
+  id: 'cpp2',
+  name: '造船厂',
+  tagline: 'class 是批量制造宝船的图纸',
+  levels: [
+    // ============ cpp2-1 class 与对象 ============
+    {
+      id: 'cpp2-1',
+      name: '第一张图纸',
+      xp: 42,
+      gold: 14,
+      learn: {
+        title: 'class：画出宝船的图纸',
+        body: [
+          'class Ship { ... }; 定义一张「图纸」：它描述某类东西有哪些数据（成员变量）和哪些技能（成员函数）。注意 class 结尾大括号后要加分号 };——新手第一坑。',
+          'Ship s; 才是「照图纸造船」：这一刻对象诞生，成员变量跟着它安家。每条船各自独立：s.name 和 t.name 互不干扰。',
+          '用 . 访问成员：s.name = "浪花"; 改数据，s.sail() 吹响技能（函数要带括号）。另外 class 的成员默认是私有的，开头要写 public: 放行外部访问（第三关细讲）。',
+        ],
+        code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nclass Ship {                 // 图纸：定义「船」长什么样\npublic:                      // class 成员默认私有，先写 public: 放行\n    string name;             // 成员变量\n    int sail() {             // 成员函数\n        return 3;\n    }\n};                           // ← 类的结尾是 }; 别丢分号\n\nint main() {\n    Ship s;                  // 照图纸造一条船（对象）\n    s.name = "浪花";         // 用 . 访问成员\n    cout << s.name << endl;  // → 浪花\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'C++ 里写下 Ship s; 这一行，意味着什么？',
+          options: ['按 Ship 图纸创建了一个对象', '定义了 Ship 这个类', '声明了一个函数', '什么都没发生'],
+          answerIndex: 0,
+          hint: '图纸（class）早画好了，这一步是「造」。',
+          explain: 'class Ship 只是图纸；Ship s; 才真正创建对象 s。定义类的写法是 class Ship { ... };，别把两者搞混。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nclass Ship {\npublic:\n    string name;\n    int sail() {\n        return 3;\n    }\n};\nint main() {\n    Ship s;\n    s.name = "浪花";\n    cout << s.name << endl;\n    cout << s.sail() << endl;\n    return 0;\n}',
+          options: ['两行：浪花 / 3', '一行：浪花3', '只有 浪花', '报错'],
+          answerIndex: 0,
+          hint: 's.name 是成员变量，s.sail() 是成员函数的返回值。',
+          explain: 's.name 装着「浪花」，第一个 cout 输出浪花；s.sail() 调用成员函数返回 3，第二个 cout 输出 3。注意 sail 后面的括号不能少——只写 s.sail 会报错。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全代码，用点号喊出这条船的名字：',
+          code: 'Ship s;\ns.name = "浪花";\ncout << s.___ << endl;   // → 浪花',
+          answers: ['name'],
+          placeholder: '成员变量名',
+          hint: '图纸里写的那块数据，用 . 直接报出名。',
+          explain: '对象.成员：s.name 读出船名「浪花」。成员变量不加括号，成员函数才要：s.sail()。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <string>', 'using namespace std;', 'class Ship {', 'public:', '    string name;', '}', 'int main() {', '    Ship s;', '    s.name = "浪花";', '    cout << s.name << endl;', '    return 0;', '}'],
+          answerLine: 6,
+          hint: 'class 的大括号合上之后，还差一个标点。',
+          explain: '第 7 行 class 的 } 后面少了分号，编译器报 expected \';\' after class definition。类的定义必须以 }; 收尾——这是 C++ 新手最经典的报错之一。',
+        },
+        {
+          kind: 'order',
+          prompt: '把船的图纸骨架排好（成员变量 + 成员函数）：',
+          lines: ['class Ship {', 'public:', '    int crew;', '    int getCrew() { return crew; }', '};'],
+          hint: 'class 开工 → public: 放行 → 数据 → 技能 → }; 收工。',
+          explain: '图纸骨架：class 类名 { 开工，public: 放行外部访问，接着列成员变量和成员函数，最后 }; 收尾。分号是灵魂。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nclass Ship {\npublic:\n    string name;\n};\nint main() {\n    Ship a;\n    Ship b;\n    a.name = "海燕";\n    b.name = "信天翁";\n    cout << a.name << " ";\n    cout << b.name << endl;\n    return 0;\n}',
+          options: ['海燕 信天翁', '信天翁 信天翁', '海燕 海燕', '报错'],
+          answerIndex: 0,
+          hint: '两条船，两个独立的 name。',
+          explain: 'a 和 b 是两个独立对象，各自的 name 互不相干：a.name 是海燕，b.name 是信天翁。改 a.name 不会影响 b.name——图纸一样，船是两条。',
+        },
+      ],
+    },
+
+    // ============ cpp2-2 构造函数 ============
+    {
+      id: 'cpp2-2',
+      name: '龙骨仪式',
+      xp: 43,
+      gold: 15,
+      learn: {
+        title: '构造函数：下水那一刻自动执行',
+        body: [
+          '构造函数是类里一个特殊的成员函数：名字与类完全相同、不写任何返回值类型（连 void 都不写）。写法：Ship(string n) { name = n; }。',
+          '它不需要手动调用——Ship s("浪花"); 创建对象的那一刻，构造函数自动执行，把开工参数 n 装进 name。造船即初始化，不会出现「裸船下水」。',
+          '构造函数也可以不带参数：Flag() { cout << "旗"; }——每造一面旗就喊一声。注意：一旦你写了带参构造函数，Ship s; 这种不传参的写法就编译报错了，想两种都行就再写一个无参版本。',
+        ],
+        code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nclass Ship {\npublic:\n    string name;\n    Ship(string n) {         // 构造函数：与类同名、不写返回值\n        name = n;            // 造船那一刻自动执行\n    }\n};\n\nint main() {\n    Ship s("浪花");          // 创建对象时括号里传开工参数\n    cout << s.name << endl;  // → 浪花\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: '下列关于构造函数的写法，正确的是？',
+          options: ['Ship(string n) { name = n; }', 'void Ship(string n) { name = n; }', 'int Ship(string n) { name = n; return 0; }', 'ship(string n) { name = n; }'],
+          answerIndex: 0,
+          hint: '与类同名，且不写任何返回值类型。',
+          explain: '构造函数两条铁律：名字与类完全相同（大小写一致）、不写返回值类型。写 void Ship 是非法的，编译器报 return type specification for constructor invalid；小写 ship 和类名对不上，只是个普通函数。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nclass Ship {\npublic:\n    string name;\n    Ship(string n) {\n        name = n;\n    }\n};\nint main() {\n    Ship s("浪花");\n    cout << s.name << endl;\n    return 0;\n}',
+          options: ['浪花', '空白：name 没有值', 'n', '报错'],
+          answerIndex: 0,
+          hint: '创建对象时括号里传了参数，构造函数自动执行。',
+          explain: 'Ship s("浪花") 创建对象的瞬间，构造函数 Ship(string n) 自动执行，n 接住「浪花」装进 name，输出浪花。这就是「出生即初始化」。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\nusing namespace std;\nclass Flag {\npublic:\n    Flag() {\n        cout << "旗帜升起" << endl;\n    }\n};\nint main() {\n    Flag f;\n    cout << "起航" << endl;\n    return 0;\n}',
+          options: ['两行：旗帜升起 / 起航', '只有 起航', '只有 旗帜升起', '报错'],
+          answerIndex: 0,
+          hint: 'Flag f; 这一行本身就会触发什么？',
+          explain: '构造函数不用手动调用：Flag f; 创建对象那一刻自动执行 Flag()，先输出「旗帜升起」，然后才轮到 main 里的 cout 输出「起航」。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全构造函数名——它必须和类同名：',
+          code: 'class Potion {\npublic:\n    int power;\n    ___() { power = 50; }\n};',
+          answers: ['Potion'],
+          placeholder: '与类完全同名的函数名',
+          hint: '构造函数的名字 = 类的名字，一个字母都不能差。',
+          explain: '构造函数的名字必须与类完全一致：Potion() { power = 50; }。写成 potion() 就成了普通函数，power 没人初始化了。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <string>', 'using namespace std;', 'class Ship {', 'public:', '    string name;', '    void Ship(string n) {', '        name = n;', '    }', '};', 'int main() {', '    Ship s("浪花");', '    cout << s.name << endl;', '    return 0;', '}'],
+          answerLine: 6,
+          hint: '构造函数不能声明返回值——连 void 也不行。',
+          explain: '第 7 行给构造函数加了 void 返回值类型，编译器报 return type specification for constructor invalid。构造函数不写任何返回值类型，正确写法：Ship(string n) { name = n; }。',
+        },
+        {
+          kind: 'choice',
+          prompt: '类里只定义了 Ship(string n) 这一个构造函数，那么 Ship s;（不传参）会怎样？',
+          options: ['编译报错：找不到能用的构造函数', '正常创建，name 是空串', '正常运行，name 是随机值', '自动改用别的构造函数'],
+          answerIndex: 0,
+          hint: '船厂只开了「带名字」这一条生产线。',
+          explain: '一旦你定义了构造函数，编译器就不再赠送默认构造函数。只写了带参版本，Ship s; 找不到匹配的构造函数，报 no matching function for call to \'Ship::Ship()\'。想两种都行，就再写一个无参版本。',
+        },
+      ],
+    },
+
+    // ============ cpp2-3 封装 ============
+    {
+      id: 'cpp2-3',
+      name: '密封舱',
+      xp: 44,
+      gold: 16,
+      learn: {
+        title: 'public / private：把宝箱锁进舱室',
+        body: [
+          'class 的成员默认 private（私有）：外部代码碰都碰不到。想放行就在前面写 public:。标签管到下一个标签为止：private: 下面的成员外面看不见，public: 下面的随便用。',
+          '封装 = 数据藏进 private，访问走 public 的函数。getter 负责读：int getGold() { return gold; }；setter 负责写：void setGold(int g) { gold = g; }。',
+          '为什么要封装？因为数据不再任人乱改：想加钱必须走 addGold 这道门，门里可以检查参数、立规矩。宝箱上锁，钥匙交给船长——这才是设计。',
+        ],
+        code: '#include <iostream>\nusing namespace std;\n\nclass Chest {\nprivate:                     // 私人舱室：外面不许直接碰\n    int gold;\npublic:                      // 公共甲板：对外服务窗口\n    Chest() { gold = 100; }\n    void addGold(int g) {    // 想加钱，走这道门\n        gold = gold + g;\n    }\n    int getGold() {          // 想看钱，也走这道门\n        return gold;\n    }\n};\n\nint main() {\n    Chest c;\n    c.addGold(50);\n    cout << c.getGold() << endl;   // → 150\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'class 里不写 public: 也不写 private:，成员默认是什么权限？',
+          options: ['private，外面碰不到', 'public，随便用', 'protected', '每次随机'],
+          answerIndex: 0,
+          hint: 'class 的门默认是锁着的。',
+          explain: 'class 成员默认 private。这也是 class 和 struct 的最大区别：struct 默认 public。所以 class 开头通常先写 public:（或明确写 private: 表达意图）。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\nusing namespace std;\nclass Chest {\nprivate:\n    int gold;\npublic:\n    Chest() {\n        gold = 100;\n    }\n    void addGold(int g) {\n        gold = gold + g;\n    }\n    int getGold() {\n        return gold;\n    }\n};\nint main() {\n    Chest c;\n    c.addGold(50);\n    cout << c.getGold() << endl;\n    return 0;\n}',
+          options: ['150', '100', '50', '报错'],
+          answerIndex: 0,
+          hint: 'addGold 是公共甲板上的门。',
+          explain: 'c.addGold(50) 走 public 门把 gold 从 100 加到 150，c.getGold() 再走门读出来。外部代码从不直接碰 gold，一切通过接口。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', 'using namespace std;', 'class Chest {', 'private:', '    int gold;', 'public:', '    Chest() {', '        gold = 100;', '    }', '};', 'int main() {', '    Chest c;', '    c.gold = 9999;', '    cout << c.gold << endl;', '    return 0;', '}'],
+          answerLine: 12,
+          hint: 'gold 住在 private 舱室里，外面的钥匙打不开。',
+          explain: '第 13 行想从外部直接改 gold，但 gold 在 private: 下面，编译器报成员私有（is private within this context）。想改数据请走 public 的成员函数，比如加一个 setGold。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全访问标签，把金币藏进私人舱室：',
+          code: 'class Chest {\n___:\n    int gold;\npublic:\n    int getGold() { return gold; }\n};',
+          answers: ['private'],
+          placeholder: '七个小写字母的访问标签',
+          hint: 'public 的反面。',
+          explain: 'private: 之后的成员外部不可访问。gold 藏进私有舱室，只留 getGold() 这扇公共门——这就是封装的最小实现。',
+        },
+        {
+          kind: 'choice',
+          prompt: '把数据藏进 private、只留 getter/setter，最大的好处是？',
+          options: ['外部不能乱改数据，规则由类自己把守', '程序运行速度大幅提升', '代码行数一定变少', '可以不用写构造函数了'],
+          answerIndex: 0,
+          hint: '上锁不是为了快，是为了「只有走门才能改」。',
+          explain: '封装的价值是控制与安全：所有修改都经过你设计的门（可以在门里校验、限制），外部再也写不出 c.gold = -999 这种破坏。速度和行数不是重点。',
+        },
+        {
+          kind: 'order',
+          prompt: '把藏宝箱的封装骨架排好：',
+          lines: ['class Chest {', 'private:', '    int gold;', 'public:', '    void setGold(int g) { gold = g; }', '    int getGold() { return gold; }', '};'],
+          hint: 'private: 在前藏数据，public: 在后开门，}; 收尾。',
+          explain: '封装骨架：private: 下面放数据 gold，public: 下面放 setGold/getGold 两扇门，最后 }; 收尾。把 public 放前面也合法，但「先藏后开门」意图更清晰。',
+        },
+      ],
+    },
+
+    // ============ cpp2-B Boss：造船厂全线综合 ============
+    {
+      id: 'cpp2-B',
+      name: '造船厂大测验',
+      xp: 100,
+      gold: 40,
+      boss: true,
+      learn: {
+        title: 'Boss：造船厂全线复习',
+        body: [
+          '这一关没有新知识。9 道题横扫三关：class 与对象、构造函数、封装。答错当场给解析。',
+          '全对零提示拿满奖励。船台已点起炉火，交付你的旗舰吧！',
+        ],
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\nusing namespace std;\nclass Flag {\npublic:\n    Flag() {\n        cout << "旗" << endl;\n    }\n};\nint main() {\n    Flag a;\n    Flag b;\n    cout << "双帆出海" << endl;\n    return 0;\n}',
+          options: ['三行：旗 / 旗 / 双帆出海', '两行：旗 / 双帆出海', '一行：旗旗双帆出海', '报错'],
+          answerIndex: 0,
+          hint: '每创建一个 Flag 对象，构造函数都自动跑一遍。',
+          explain: 'Flag a; 和 Flag b; 各创建一个对象，每创建一次构造函数自动执行一次，「旗」输出两行；最后输出「双帆出海」。共三行（已实测）。',
+        },
+        {
+          kind: 'choice',
+          prompt: '构造函数的特点是？',
+          options: ['与类同名，不写返回值类型，创建对象时自动调用', '必须写 void 返回值', '必须手动调用才会执行', '一个类最多只能有一个构造函数'],
+          answerIndex: 0,
+          hint: '名字抄类名，从不写返回值，下水即点火。',
+          explain: '构造函数与类同名、不写返回值（void 也不行）、创建对象时自动执行。一个类可以有多个构造函数（参数不同即可），不是只能一个。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全构造函数名——它必须和类同名：',
+          code: 'class Potion {\npublic:\n    int power;\n    ___() { power = 50; }\n};',
+          answers: ['Potion'],
+          placeholder: '与类完全同名的函数名',
+          hint: '构造函数的名字 = 类的名字，一个字母都不能差。',
+          explain: '构造函数的名字必须与类完全一致：Potion() { power = 50; }。大小写也要一致，potion() 不算构造函数。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', 'using namespace std;', 'class Chest {', 'private:', '    int gold;', 'public:', '    Chest() {', '        gold = 100;', '    }', '    int getGold() {', '        return gold;', '    }', '};', 'int main() {', '    Chest c;', '    cout << c.gold << endl;', '    return 0;', '}'],
+          answerLine: 15,
+          hint: '就算只是「看一眼」，private 也不让进。',
+          explain: '第 16 行想从外部读 gold，但 gold 在 private: 下面，编译器报 is private within this context——读和写都不行。想看数据，走 public 的 getGold()。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nclass Ship {\npublic:\n    string name;\n    Ship(string n) {\n        name = n;\n    }\n    void sail() {\n        cout << name << " 扬帆!" << endl;\n    }\n};\nint main() {\n    Ship s("黑珍珠");\n    s.sail();\n    return 0;\n}',
+          options: ['黑珍珠 扬帆!', '扬帆! 黑珍珠', '黑珍珠', '报错'],
+          answerIndex: 0,
+          hint: '构造函数先装好名字，sail 再喊话。',
+          explain: 'Ship s("黑珍珠") 创建对象时构造函数把 name 装成「黑珍珠」；s.sail() 输出 name 加「扬帆!」，即「黑珍珠 扬帆!」。构造在前，调用在后。',
+        },
+        {
+          kind: 'order',
+          prompt: '把带构造函数的图纸排好：',
+          lines: ['class Chest {', 'public:', '    int gold;', '    Chest() { gold = 100; }', '};'],
+          hint: 'class 开工 → public: → 数据 → 构造函数 → }; 收工。',
+          explain: '带构造函数的图纸：class Chest { 开工，public: 放行，声明成员变量 gold，再写与类同名的构造函数，最后 }; 收尾。构造函数负责给 gold 一个出生值。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'class 和 struct 的默认成员权限，哪个说法对？',
+          options: ['class 默认 private，struct 默认 public', '都默认 public', '都默认 private', 'struct 默认 private，class 默认 public'],
+          answerIndex: 0,
+          hint: '一扇门习惯上锁，一扇门习惯敞开。',
+          explain: 'class 成员默认 private，struct 默认 public——这是两者几乎唯一的语义区别。造船厂用 class，把锁装上。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全 getter 调用，把宝箱里的金币报出来：',
+          code: 'Chest c;\nc.setGold(88);\ncout << c.___() << endl;   // → 88',
+          answers: ['getGold'],
+          placeholder: 'getter 的名字',
+          hint: '读金币走的那扇门。',
+          explain: 'getter 叫 getGold：c.getGold() 返回 gold 当前值。它是成员函数，调用必须带括号；写 c.getGold 不带括号会报错。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\nusing namespace std;\nclass Chest {\npublic:\n    int gold;\n    Chest() {\n        gold = 10;\n    }\n    void add(int g) {\n        gold += g;\n    }\n};\nint main() {\n    Chest a;\n    Chest b;\n    a.add(5);\n    cout << a.gold << " " << b.gold << endl;\n    return 0;\n}',
+          options: ['15 10', '15 15', '10 15', '报错'],
+          answerIndex: 0,
+          hint: 'add 只加在 a 的宝箱上。',
+          explain: 'a 和 b 各自独立：构造时都是 10，a.add(5) 只把 a 加到 15，b 还是 10，输出「15 10」。对象之间数据互不串门。船已交付，造船厂毕业！',
+        },
+      ],
+    },
+  ],
+}

@@ -1,0 +1,316 @@
+import type { RegionDef } from '../course'
+
+/**
+ * 区域 3：百宝舱（STL 标准库：vector / string 工具箱 / map）
+ *
+ * 每关 6 题，五种题型混排（每关至少各 1 填空与 1 改错），Boss 关 9 题全线综合。
+ * 所有题目代码已在 g++ 8.1.0（-std=c++14 -Wall）下真机验算。区域 id 用 cpp 前缀，
+ * 与 cpp1、cpp2 及 Python、JS 课程在错题本中互不冲突。
+ */
+export const regionCpp3: RegionDef = {
+  id: 'cpp3',
+  name: '百宝舱',
+  tagline: 'STL 把常用宝物批量装船',
+  levels: [
+    // ============ cpp3-1 vector ============
+    {
+      id: 'cpp3-1',
+      name: '百变货舱',
+      xp: 42,
+      gold: 14,
+      learn: {
+        title: 'vector：能伸缩的货舱',
+        body: [
+          '普通变量一次只能装一个数。写下 #include <vector>，再用 vector<int> v; 就造出一个「int 型货舱」：想装几件装几件，还能随时扩容。尖括号 <int> 写明舱里装什么类型。',
+          'v.push_back(20); 把新货追加到舱尾；v.size() 报出当前件数；v[0]、v[1]…按下标取货——下标从 0 开始，最大只到 v.size() - 1。',
+          'for (int x : v) { ... } 是范围 for：x 依次接过舱里每件货，逐个处理，不用自己管下标。小心：v[10] 这种越界取货，编译不报错、运行也不拦你，但后果不可预料——取货前先问 v.size()。',
+        ],
+        code: '#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    vector<int> v;               // 空货舱：还没装货\n    cout << v.size() << endl;    // → 0\n\n    v.push_back(20);             // push_back：把货追加到舱尾\n    v.push_back(35);\n    v.push_back(12);\n\n    cout << v.size() << endl;    // → 3（现在有 3 件货）\n    cout << v[0] << endl;        // → 20（下标从 0 开始）\n    cout << v[2] << endl;        // → 12（最后一件的下标是 size()-1）\n\n    int total = 0;\n    for (int x : v) {            // 范围 for：x 依次是 20、35、12\n        total += x;\n    }\n    cout << total << endl;       // → 67\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: '想把一件新货追加到 vector 的舱尾，用哪个成员函数？',
+          options: ['push_back', 'add_back', 'append', 'push'],
+          answerIndex: 0,
+          hint: 'push（推）+ back（舱尾）。',
+          explain: 'vector 用 push_back(值) 把元素追加到舱尾。add_back、append 在 C++ 的 vector 里都不存在，push 单独也不是成员函数。记住口诀：push（推）+ back（到舱尾）。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    vector<int> v;\n    v.push_back(10);\n    v.push_back(30);\n    cout << v.size() << endl;\n    cout << v[1] << endl;\n    return 0;\n}',
+          options: ['两行：2 / 30', '两行：2 / 10', '一行：2', '报错'],
+          answerIndex: 0,
+          hint: 'push_back 两次，舱里有几件？下标 1 是第几件？',
+          explain: 'v.push_back(10)、v.push_back(30) 依次装进两件货，v.size() 是 2；v[1] 取下标 1 的货——第二件，也就是 30。下标从 0 数起：v[0] 是 10，v[1] 才是 30。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全头文件——vector 住在这个头文件里：',
+          code: '#include <___>\n\nvector<int> v;\nv.push_back(7);\ncout << v.size() << endl;   // → 1',
+          answers: ['vector'],
+          placeholder: '尖括号里的头文件名',
+          hint: '货舱的名字就是头文件的名字。',
+          explain: 'vector 的本领都住在 <vector> 头文件里，忘了 include，vector<int> 这行直接编译报错。头文件名和容器同名，好记。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <vector>', 'using namespace std;', 'int main() {', '    vector v;', '    v.push_back(5);', '    cout << v[0] << endl;', '    return 0;', '}'],
+          answerLine: 4,
+          hint: '货舱装什么类型的货，得写清楚。',
+          explain: '第 5 行 vector 少了尖括号里的类型，编译器报 missing template arguments before \'v\'。必须写明装什么：vector<int> v;。<int> 不是装饰，是货舱的装载清单。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    vector<int> v;\n    v.push_back(2);\n    v.push_back(4);\n    v.push_back(6);\n    int sum = 0;\n    for (int x : v) {\n        sum += x;\n    }\n    cout << sum << endl;\n    return 0;\n}',
+          options: ['12', '6', '3', '报错'],
+          answerIndex: 0,
+          hint: 'x 依次接过 2、4、6，sum 一路累加。',
+          explain: '范围 for 依次把 2、4、6 交给 x，sum 一步步累加：2 → 6 → 12。它天然不会越界，舱里有几件就循环几圈。',
+        },
+        {
+          kind: 'order',
+          prompt: '把装货、取货的步骤排好：',
+          lines: ['vector<int> v;', 'v.push_back(7);', 'v.push_back(9);', 'int first = v[0];', 'cout << first << endl;'],
+          hint: '先有舱，再按顺序装货；v[0] 是先装进来的那件。',
+          explain: '先用 vector<int> v; 造舱，才能往里装；push_back 按调用顺序追加：7 先进舱成为 v[0]，9 后进成为 v[1]。所以 int first = v[0]; 取出的是 7。',
+        },
+      ],
+    },
+
+    // ============ cpp3-2 string 方法 ============
+    {
+      id: 'cpp3-2',
+      name: '旗语手册',
+      xp: 43,
+      gold: 15,
+      learn: {
+        title: 'string 工具箱：量、接、比、剪',
+        body: [
+          'cpp1 里初识过 string，这次打开它的工具箱：s.size() 报字符个数；s1 + s2 把两段字符串首尾拼起来；== 逐字符比较，完全一样才是 true（大小写也算不同）。',
+          's.substr(起点, 个数) 从起点下标开始「剪」出一段新字符串，原串毫发无损。下标从 0 数起。',
+          '本章例题都用英文字母，size() 数出来就是字符个数。（中文在 string 里占多个字节，size() 会数出比字数大的值，这个坑以后再细讲。）',
+        ],
+        code: '#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    string s = "Code";\n    cout << s.size() << endl;        // → 4（字符个数）\n\n    string t = s + "Isles";          // + 把两段字符串接起来\n    cout << t << endl;               // → CodeIsles\n\n    if (t == "CodeIsles") {          // == 逐字符比较，完全一样才是 true\n        cout << "match" << endl;     // → match\n    }\n\n    string head = t.substr(0, 4);    // 从下标 0 起剪 4 个字符，原串不动\n    cout << head << endl;            // → Code\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'string a = "Sea"; 想在后面接上 "Wolf"，正确的写法是？',
+          options: ['string c = a + "Wolf";', 'string c = a & "Wolf";', 'string c = a ++ "Wolf";', 'string c = concat(a, "Wolf");'],
+          answerIndex: 0,
+          hint: '它和数字加法共用一个符号。',
+          explain: 'C++ 的 string 重载了 +：a + "Wolf" 首尾相接得 "SeaWolf"。&、++ 都不能拼字符串，concat 也不是 string 的成员函数。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    string a = "Sea";\n    string b = "Wolf";\n    string c = a + b;\n    cout << c.size() << endl;\n    return 0;\n}',
+          options: ['7', '6', '8', '报错'],
+          answerIndex: 0,
+          hint: '先数 "Sea" 几个字符，再数 "Wolf"。',
+          explain: '"Sea" 3 个字符 + "Wolf" 4 个字符 = "SeaWolf"，size() 报出总长 7。size() 量的是拼接后新串的长度，跟原来两个变量无关。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全成员函数——从 "CodeIsles" 里剪出前 4 个字符：',
+          code: 'string t = "CodeIsles";\nstring head = t.___(0, 4);   // → "Code"\ncout << head << endl;',
+          answers: ['substr'],
+          placeholder: '成员函数名',
+          hint: 'sub（一段）+ str（字符串）：剪出 substring。',
+          explain: 'substr(起点, 个数)：从起点下标开始剪出指定个数的新字符串，原串不动。t.substr(0, 4) 得到 "Code"。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <string>', 'using namespace std;', 'int main() {', '    string s = "Code";', '    cout << s.size << endl;', '    return 0;', '}'],
+          answerLine: 5,
+          hint: 'size 是成员函数，调用时它想要什么？',
+          explain: '第 6 行 s.size 少了括号：只写函数名是「指名」而不是「喊人」，编译器报 no match for \'operator<<\'（unresolved overloaded function type）。成员函数调用必须带 ()——s.size() 才会真正去数。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    string a = "Port";\n    string b = "port";\n    if (a == b) {\n        cout << "一样" << endl;\n    } else {\n        cout << "不一样" << endl;\n    }\n    return 0;\n}',
+          options: ['不一样', '一样', '报错', '什么都不输出'],
+          answerIndex: 0,
+          hint: '在 == 眼里，大小写算不算差别？',
+          explain: '== 对 string 逐字符比较，且区分大小写："Port" 和 "port" 只差一个字母的大小写，就不相等，走 else 输出「不一样」。想不区分大小写，得先把两边统一转换再比。',
+        },
+        {
+          kind: 'order',
+          prompt: '把拼接船名的四步排好：',
+          lines: ['string a = "Black";', 'string b = "Pearl";', 'string ship = a + b;', 'cout << ship << endl;'],
+          hint: '先备料（两个 string），再拼接，最后输出。',
+          explain: 'a、b 先备好料，a + b 拼出 "BlackPearl" 存进 ship，最后输出。变量要先声明再使用，四步顺序不能乱。（顺带一验：ship.size() 是 10。）',
+        },
+      ],
+    },
+
+    // ============ cpp3-3 map ============
+    {
+      id: 'cpp3-3',
+      name: '藏宝图',
+      xp: 44,
+      gold: 16,
+      learn: {
+        title: 'map：键值对的藏宝图',
+        body: [
+          '#include <map> 后，map<string, int> gold; 是一张「藏宝图」：左边是键（string，比如船长名），右边是值（int，比如金币数），一一对应，凭键取值。',
+          'gold["Storm"] = 100; 键不存在就是新增，键已存在就是改写。gold["Storm"] 凭键读值。gold.count("X") 判断键在不在册：存在返回 1，不存在返回 0，常直接放进 if。',
+          '一个大坑：用 gold["Ghost"] 读一个不存在的键，map 会顺手把它造出来、值记成 0——只想查不想加，就用 count()。',
+        ],
+        code: '#include <iostream>\n#include <map>\n#include <string>\nusing namespace std;\n\nint main() {\n    map<string, int> gold;           // 藏宝图：船长名 → 金币数\n    gold["Storm"] = 100;             // 键不存在 → 新增\n    gold["Wave"] = 80;\n    gold["Storm"] = 120;             // 键已存在 → 改写成 120\n\n    cout << gold["Storm"] << endl;   // → 120（凭键读值）\n    cout << gold["Wave"] << endl;    // → 80\n\n    if (gold.count("Wave")) {        // 存在返回 1，不存在返回 0\n        cout << "Wave 在册" << endl; // → Wave 在册\n    }\n    return 0;\n}',
+      },
+      questions: [
+        {
+          kind: 'choice',
+          prompt: 'map<string, int> 这种容器，存的是什么？',
+          options: ['成对的键值：凭键找值', '一串排好队的值', '只有下标没有名字', '两份互相独立的数组'],
+          answerIndex: 0,
+          hint: '像藏宝图：地名（键）对应宝藏（值）。',
+          explain: 'map 是「键 → 值」的一一对应：这里键是 string（船长名）、值是 int（金币数）。凭键读写值，而不是像 vector 靠 0、1、2 的下标。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <map>\n#include <string>\nusing namespace std;\nint main() {\n    map<string, int> gold;\n    gold["Storm"] = 100;\n    gold["Wave"] = 80;\n    gold["Storm"] = 120;\n    cout << gold["Storm"] << endl;\n    cout << gold["Wave"] << endl;\n    return 0;\n}',
+          options: ['两行：120 / 80', '两行：100 / 80', '两行：120 / 120', '报错'],
+          answerIndex: 0,
+          hint: '第二次给 "Storm" 记账，是新增还是改写？',
+          explain: 'gold["Storm"] = 100 先新增；第二次 gold["Storm"] = 120 时键已存在，变成改写——同一键反复赋值，留最后一次，所以输出 120。gold["Wave"] 没被动过，还是 80。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全成员函数——查查 "BlackPearl" 这条船在不在册：',
+          code: 'map<string, int> gold;\ngold["Storm"] = 100;\nif (gold.___("BlackPearl")) {\n    cout << "在册" << endl;\n} else {\n    cout << "查无此船" << endl;   // 走这里\n}',
+          answers: ['count'],
+          placeholder: '成员函数名',
+          hint: '它在数「这个键有几条」：存在是 1，不存在是 0。',
+          explain: 'count(键) 返回 1（存在）或 0（不存在），可直接当条件用。比 [] 安全：[] 查不存在的键会把键造出来，count() 只查不改。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <map>', '#include <string>', 'using namespace std;', 'int main() {', '    map<string, int> gold;', '    gold[100] = 1;', '    cout << gold["Storm"] << endl;', '    return 0;', '}'],
+          answerLine: 6,
+          hint: '键的类型说好了是 string。',
+          explain: '第 7 行拿整数 100 当键，可这张图声明的是 map<string, int>——键必须是 string，编译器报 no match for \'operator[]\'。想用编号当键，就把键类型声明成 int。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <map>\n#include <string>\nusing namespace std;\nint main() {\n    map<string, int> gold;\n    gold["Storm"] = 100;\n    cout << gold["Ghost"] << endl;\n    cout << gold.size() << endl;\n    return 0;\n}',
+          options: ['两行：0 / 2', '两行：0 / 1', '一行：0', '报错'],
+          answerIndex: 0,
+          hint: '[] 遇到陌生的键，会热心地做什么？',
+          explain: 'gold["Ghost"] 查一个不存在的键：map 不报错，而是顺手把这个键插进图里、值设为默认值 0，再返回 0。于是 size() 从 1 变成 2——[] 的「热心」就是坑；只想查不想加，用 count()。',
+        },
+        {
+          kind: 'order',
+          prompt: '把金币账本的操作排好（排完你就知道最后输出多少）：',
+          lines: ['map<string, int> gold;', 'gold["Storm"] = 100;', 'gold["Wave"] = 80;', 'gold["Storm"] = 150;', 'cout << gold["Storm"] << endl;'],
+          hint: '先有图才能记账；同一条船记第二次是改写。',
+          explain: '先声明 map；gold["Storm"] = 100 是新增，gold["Storm"] = 150 是改写（键已存在，直接覆盖），最后输出 150。同一键反复赋值，留的是最后一次。',
+        },
+      ],
+    },
+
+    // ============ cpp3-B Boss：百宝舱全线综合 ============
+    {
+      id: 'cpp3-B',
+      name: '百宝舱大测验',
+      xp: 100,
+      gold: 40,
+      boss: true,
+      learn: {
+        title: 'Boss：百宝舱全线复习',
+        body: [
+          '这一关没有新知识。9 道题横扫三关：vector 货舱、string 工具箱、map 藏宝图。答错当场给解析，放心冲。',
+          '全对零提示才能拿满奖励。百宝舱的宝物清单都背熟了吗？验收开始！',
+        ],
+      },
+      questions: [
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    vector<int> v;\n    v.push_back(3);\n    v.push_back(6);\n    v.push_back(9);\n    int total = 0;\n    for (int x : v) {\n        total += x;\n    }\n    cout << v.size() << " " << total << endl;\n    return 0;\n}',
+          options: ['3 18', '18 3', '3 15', '报错'],
+          answerIndex: 0,
+          hint: 'size() 报件数，范围 for 报总和。',
+          explain: '3、6、9 依次进舱，v.size() 是 3；范围 for 把三件货累加：3 + 6 + 9 = 18。输出「3 18」。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'vector 里装了 3 件货，最后一件的下标是？',
+          options: ['v.size() - 1', 'v.size()', '3', '4'],
+          answerIndex: 0,
+          hint: '下标从 0 开始数。',
+          explain: '下标从 0 开始：3 件货的下标是 0、1、2。v.size() 是 3，最后一件的下标是 size() - 1 = 2；写 v[3]（也就是 v[v.size()]）就越界了。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全成员函数——把 42 装进舱：',
+          code: 'vector<int> v;\nv.___(42);                  // 追加到舱尾\ncout << v.size() << endl;   // → 1',
+          answers: ['push_back'],
+          placeholder: '成员函数名',
+          hint: 'push（装）+ back（舱尾）。',
+          explain: 'push_back(42) 把 42 追加到 vector 末尾，size 从 0 变 1。这是 vector 最常用的进货方式。',
+        },
+        {
+          kind: 'bug',
+          prompt: '这段程序编译报错，问题出在哪一行？',
+          code: ['#include <iostream>', '#include <string>', 'using namespace std;', 'int main() {', '    string s = "Pearl";', '    if (s == \'Pearl\') {', '        cout << "yes" << endl;', '    }', '    return 0;', '}'],
+          answerLine: 5,
+          hint: '字符串全家都住双引号。',
+          explain: '第 6 行把 "Pearl" 写成了单引号。C++ 里单引号只装单个字符（如 \'A\'），\'Pearl\' 会被当成一个古怪的整数，和 string 比较就报 no match for \'operator==\'。字符串字面量必须用双引号。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    string s = "CodeIsles";\n    string tail = s.substr(4, 5);\n    cout << tail << endl;\n    cout << s.size() << endl;\n    return 0;\n}',
+          options: ['两行：Isles / 9', '两行：Code / 9', '两行：Isles / 5', '报错'],
+          answerIndex: 0,
+          hint: '下标从 0 数起：第 5 个字符是谁？',
+          explain: 'substr(4, 5) 从下标 4 起剪 5 个字符："CodeIsles" 的下标 4 处正是 \'I\'，剪出 "Isles"。substr 不动原串，s.size() 还是 9。',
+        },
+        {
+          kind: 'choice',
+          prompt: 'map 里用 gold["Ghost"] 读一个不存在的键，会发生什么？',
+          options: ['map 自动新增这个键，值记成 0', '编译报错', '运行时崩溃', '返回 -1'],
+          answerIndex: 0,
+          hint: '[] 又能读又能加，是个热心过头的家伙。',
+          explain: '用 [] 访问不存在的键，map 会先把这个键插进去、值设为默认值 0，再返回它。只想判断在不在册，用 gold.count("Ghost")，它只查不改。',
+        },
+        {
+          kind: 'fill',
+          prompt: '补全容器类型——一张「船长名 → 金币数」的藏宝图：',
+          code: '___<string, int> gold;   // 键是船名，值是金币\ngold["Storm"] = 100;\ncout << gold["Storm"] << endl;   // → 100',
+          answers: ['map'],
+          placeholder: '三个字母的容器名',
+          hint: '藏宝图 = map：凭键（船名）找值（金币）。',
+          explain: 'map<键类型, 值类型> 建立一对一映射：这里键是 string、值是 int，写 map<string, int>，并记得 #include <map>。',
+        },
+        {
+          kind: 'order',
+          prompt: '把拼接船名的四步排好：',
+          lines: ['string a = "Sea";', 'string b = "Star";', 'string c = a + b;', 'cout << c << endl;'],
+          hint: '备料 → 拼接 → 输出，次序不能乱。',
+          explain: 'a 备好 "Sea"，b 备好 "Star"，a + b 拼出 "SeaStar" 存进 c，最后输出。变量要先声明再使用，顺序颠倒就编译报错。',
+        },
+        {
+          kind: 'output',
+          prompt: '这段程序运行后输出什么？',
+          code: '#include <iostream>\n#include <map>\n#include <string>\nusing namespace std;\nint main() {\n    map<string, int> gold;\n    gold["Storm"] = 100;\n    gold["Wave"] = 80;\n    if (gold.count("Storm")) {\n        gold["Storm"] += 20;\n    }\n    cout << gold["Storm"] << endl;\n    return 0;\n}',
+          options: ['120', '100', '80', '报错'],
+          answerIndex: 0,
+          hint: 'count 先侦察，[] 再动手。',
+          explain: 'gold.count("Storm") 返回 1（在册），if 成立，gold["Storm"] += 20 把金币从 100 加到 120。count 负责侦察、[] 负责动手，这对组合很常用。',
+        },
+      ],
+    },
+  ],
+}

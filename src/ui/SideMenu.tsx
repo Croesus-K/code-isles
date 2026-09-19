@@ -1,5 +1,6 @@
 import type { CourseDef } from '../content/course'
 import { COURSES, courseProgress } from '../content/courses'
+import { isSecretUnlocked } from '../core/progress'
 import type { SaveData } from '../core/save/schema'
 import { audio } from '../core/audio'
 import { CloudSyncPanel } from './CloudSyncPanel'
@@ -59,7 +60,11 @@ export function SideMenu(p: SideMenuProps) {
                 >
                   <span className="course-item__name">{c.lang ?? c.title}</span>
                   <span className="course-item__meta">
-                    {prog.total > 0 ? `${prog.cleared}/${prog.total} 关 · ${pct}%` : '敬请期待'}
+                    {c.id === 'secret-isle' && !isSecretUnlocked(p.save)
+                      ? '🔒 凭密钥解锁'
+                      : prog.total > 0
+                        ? `${prog.cleared}/${prog.total} 关 · ${pct}%`
+                        : '敬请期待'}
                   </span>
                   <span className="course-item__bar" aria-hidden="true">
                     <span className="course-item__bar-fill" style={{ width: `${pct}%` }} />

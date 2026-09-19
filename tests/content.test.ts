@@ -11,7 +11,8 @@ import { COURSES } from '../src/content/courses'
  * 新加课程不会偷偷降低质量门槛。
  */
 describe('课程内容完整性（所有课程）', () => {
-  const allCourses = COURSES.filter((c) => !c.regions.every((r) => r.comingSoon))
+  // secret-isle 是服务端下发制的独立隐藏课程，静态内容为空，不参与常规结构断言
+  const allCourses = COURSES.filter((c) => c.id !== 'secret-isle' && !c.regions.every((r) => r.comingSoon))
 
   it('每门已发布课程至少有 3 个 region', () => {
     for (const c of allCourses) {
@@ -130,14 +131,10 @@ describe('课程内容完整性（所有课程）', () => {
 describe('Python 课程内容完整性', () => {
   const regions = pythonBasics.regions
 
-  it('五个常规区域齐备 + 末尾一个隐藏 stub，id 与顺序正确', () => {
-    const visible = regions.filter((r) => !r.hidden)
-    expect(visible.map((r) => r.id)).toEqual(['1', '2', '3', '4', '5'])
-    // 隐藏区域（秘境岛）排在末尾；静态形态是 levels 为空的占位 stub
-    expect(regions[regions.length - 1]?.hidden).toBe(true)
-    expect(regions[regions.length - 1]?.id).toBe('6')
-    expect(regions[regions.length - 1]?.levels).toEqual([])
-    expect(regions.filter((r) => !r.hidden).every((r) => r.levels.length >= 4)).toBe(true)
+  it('五个常规区域齐备，id 与顺序正确（秘境岛已独立为课程，不再内嵌 stub）', () => {
+    expect(regions.map((r) => r.id)).toEqual(['1', '2', '3', '4', '5'])
+    expect(regions.some((r) => r.hidden)).toBe(false)
+    expect(regions.every((r) => r.levels.length >= 4)).toBe(true)
   })
 
   it('Python 关卡 id 前缀与区域一致', () => {

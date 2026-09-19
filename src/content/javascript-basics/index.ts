@@ -1,5 +1,4 @@
 import type { CourseDef, LevelDef, RegionDef } from '../course'
-import { regionJ5Stub } from './region5'
 
 /**
  * 第二门课程：JavaScript 基础（高效入门版）。
@@ -1136,6 +1135,6 @@ export const javascriptBasics: CourseDef = {
   title: 'JS 基础',
   subtitle: 'JavaScript 入门：从变量到对象与闭包',
   lang: 'JavaScript',
-  // regionJ5Stub 为秘境岛占位（服务端下发制），不影响常规解锁链
-  regions: [regionJ1, regionJ2, regionJ3, regionJ4, regionJ5Stub],
+  // 秘境岛已升级为独立课程（src/content/secret-isle.ts），本课程不再内嵌 stub
+  regions: [regionJ1, regionJ2, regionJ3, regionJ4],
 }

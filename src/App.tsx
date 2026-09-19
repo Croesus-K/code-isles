@@ -8,7 +8,8 @@ import {
   requestNotificationPermission,
   shouldNotifyToday,
 } from './core/notifications'
-import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse, withSecretRegion } from './content/courses'
+import { COURSE_PREF_KEY, COURSES, DEFAULT_COURSE_ID, courseProgress, getCourse, withSecretRegions } from './content/courses'
+import { isSecretUnlocked } from './core/progress'
 import { AnnouncePanel } from './ui/AnnouncePanel'
 import { ChallengeView } from './ui/ChallengeView'
 import { DonateModal } from './ui/DonateModal'
@@ -65,8 +66,10 @@ export default function App() {
   const [swState, setSwState] = useState({ needUpdate: false, offline: false })
 
   const course = getCourse(courseId)
-  // 秘境岛（服务端下发制）：有下发内容时原位替换静态 stub，形成完整课程视图
-  const activeCourse = withSecretRegion(course, secretLevels?.[course.id])
+  // 秘境岛为独立课程：服务端下发的全部秘境区域并入其中；其余课程为纯静态
+  const activeCourse =
+    course.id === 'secret-isle' ? withSecretRegions(course, secretLevels) : course
+  const secretLocked = activeCourse.id === 'secret-isle' && !isSecretUnlocked(save)
 
   // 启动恢复秘境岛：有缓存先即时恢复，再后台向服务端再校验（内容更新 / 吊销感知）
   useEffect(() => {
@@ -301,18 +304,30 @@ export default function App() {
                 })}
               </div>
             </PixelPanel>
-            <WorldMap
-              course={activeCourse}
-              save={save}
-              onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
-              onOpenProfile={() => setScene({ name: 'profile' })}
-              onStartReview={() => setScene({ name: 'review' })}
-              onStartChallenge={
-                challengePoolSize(save, activeCourse) > 0
-                  ? () => setScene({ name: 'challenge' })
-                  : undefined
-              }
-            />
+            {secretLocked ? (
+              <PixelPanel title="秘境岛 · 需要专属密钥">
+                <p className="secret-gate__text">
+                  秘境岛是打赏专属的独立学习项目：凭在册密钥解锁后，服务端会把隐藏关卡
+                  下发到这里，与四门语言课程平级推进。打赏后向作者索取密钥即可入场。
+                </p>
+                <div className="row row--center">
+                  <PixelButton onClick={() => setShowDonate(true)}>输入专属密钥</PixelButton>
+                </div>
+              </PixelPanel>
+            ) : (
+              <WorldMap
+                course={activeCourse}
+                save={save}
+                onEnter={(regionIndex) => setScene({ name: 'region', regionIndex })}
+                onOpenProfile={() => setScene({ name: 'profile' })}
+                onStartReview={() => setScene({ name: 'review' })}
+                onStartChallenge={
+                  challengePoolSize(save, activeCourse) > 0
+                    ? () => setScene({ name: 'challenge' })
+                    : undefined
+                }
+              />
+            )}
             {statusLine}
           </>
         )}

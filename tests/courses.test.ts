@@ -19,6 +19,13 @@ describe('课程注册表', () => {
     expect(getCourse(COURSES[0]!.id)).toBe(COURSES[0])
   })
 
+  it('secret-isle 注册为独立课程，静态内容为空（全部由服务端下发）', () => {
+    const s = getCourse('secret-isle')
+    expect(s.id).toBe('secret-isle')
+    expect(s.regions.length).toBe(0)
+    expect(COURSES.some((c) => c.id === 'secret-isle')).toBe(true)
+  })
+
   it('每道题结构合法（answerIndex/answers/answerLine/lines 越界即内容 bug）', () => {
     for (const course of COURSES) {
       for (const region of course.regions) {

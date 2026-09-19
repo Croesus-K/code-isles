@@ -12,8 +12,9 @@ import {
 import { isRegionUnlocked, isSecretUnlocked } from '../src/core/progress'
 import { earnedBadgeIds } from '../src/core/badges'
 import { defaultSave } from '../src/core/save/schema'
-import { COURSES, getCourse, withSecretRegion } from '../src/content/courses'
-import type { RegionDef } from '../src/content/course'
+import { COURSES, getCourse, withSecretRegion, withSecretRegions } from '../src/content/courses'
+import { secretIsle } from '../src/content/secret-isle'
+import type { CourseDef, RegionDef } from '../src/content/course'
 
 /**
  * 真实发卡钥（tools/mint-key.mjs 以当前在册制算法铸造）。
@@ -176,57 +177,70 @@ describe('秘境岛内容缓存（localStorage）', () => {
   })
 })
 
-describe('withSecretRegion 动态合并', () => {
+describe('withSecretRegion 动态合并（通用工具）', () => {
+  const stubCourse: CourseDef = {
+    id: 'fixture',
+    title: 'fixture',
+    subtitle: '',
+    regions: [{ id: '6', name: '秘境岛', tagline: '', hidden: true, levels: [] }],
+  }
+
   it('secret 为空 / levels 为空 → 原样返回', () => {
-    const py = getCourse('python-basics')
-    expect(withSecretRegion(py, null)).toBe(py)
-    expect(withSecretRegion(py, fakeRegion('6', '6-1') && { ...fakeRegion('6', '6-1'), levels: [] })).toBe(py)
+    expect(withSecretRegion(stubCourse, null)).toBe(stubCourse)
+    expect(withSecretRegion(stubCourse, { ...fakeRegion('6', '6-1'), levels: [] })).toBe(stubCourse)
   })
 
   it('stub 同 id → 原位替换；无 stub → 追加末尾', () => {
-    const py = getCourse('python-basics')
     const full = fakeRegion('6', '6-1')
-    const merged = withSecretRegion(py, full)
-    expect(merged).not.toBe(py)
+    const merged = withSecretRegion(stubCourse, full)
+    expect(merged).not.toBe(stubCourse)
     expect(merged.regions[merged.regions.length - 1]).toBe(full)
     expect(merged.regions.filter((r) => r.id === '6').length).toBe(1)
 
-    const js = getCourse('javascript-basics')
-    const mergedJs = withSecretRegion(js, fakeRegion('x9', 'x9-1'))
+    const mergedJs = withSecretRegion(stubCourse, fakeRegion('x9', 'x9-1'))
     expect(mergedJs.regions[mergedJs.regions.length - 1]?.id).toBe('x9')
-    expect(js.regions.length).toBe(mergedJs.regions.length - 1)
+    expect(mergedJs.regions.length).toBe(stubCourse.regions.length + 1)
   })
 })
 
-describe('隐藏区域解锁（progress / badges）', () => {
+describe('withSecretRegions 独立秘境岛课程合并', () => {
+  it('未下发 / 空 payload → 原样返回', () => {
+    expect(withSecretRegions(secretIsle, null)).toBe(secretIsle)
+    expect(withSecretRegions(secretIsle, {})).toBe(secretIsle)
+  })
+
+  it('并入全部下发区域并去重（幂等）', () => {
+    const once = withSecretRegions(secretIsle, {
+      'python-basics': fakeRegion('6', '6-1'),
+      'javascript-basics': fakeRegion('j5', 'j5-1'),
+    })
+    expect(once.regions.map((r) => r.id)).toEqual(['6', 'j5'])
+    const twice = withSecretRegions(once, {
+      'python-basics': fakeRegion('6', '6-1'),
+    })
+    expect(twice.regions.length).toBe(once.regions.length)
+  })
+})
+
+describe('隐藏区域解锁（独立秘境岛课程）', () => {
   const py = getCourse('python-basics')
   const js = getCourse('javascript-basics')
-  const pyStub = py.regions.find((r) => r.hidden)!
-  const jsStub = js.regions.find((r) => r.hidden)!
-  const pyStubIndex = py.regions.indexOf(pyStub)
-  const jsStubIndex = js.regions.indexOf(jsStub)
 
-  it('两门课都有秘境岛占位，id 仍全局唯一', () => {
-    expect(pyStub?.id).toBe('6')
-    expect(jsStub?.id).toBe('j5')
+  it('四门语言课程不再内嵌秘境岛 stub；secret-isle 静态为空，region id 全局唯一', () => {
+    expect(py.regions.some((r) => r.hidden)).toBe(false)
+    expect(js.regions.some((r) => r.hidden)).toBe(false)
+    expect(getCourse('secret-isle').regions.length).toBe(0)
     const ids = COURSES.flatMap((c) => c.regions.map((r) => r.id))
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('stub（内容未下发）即使有密钥也锁定；常规区域 1 不受影响', () => {
+  it('独立秘境岛：下发后凭合法密钥解锁（无需通关前置）；无密钥锁定', () => {
     const save = { ...defaultSave(), secretKey: REAL_KEY }
-    expect(isSecretUnlocked(save)).toBe(true)
-    expect(isRegionUnlocked(save, py, pyStubIndex)).toBe(false)
-    expect(isRegionUnlocked(save, js, jsStubIndex)).toBe(false)
-    expect(isRegionUnlocked(save, py, 0)).toBe(true)
-    expect(isRegionUnlocked(save, js, 0)).toBe(true)
-  })
-
-  it('内容下发后（合并课程）：有格式合法密钥即解锁，无需通关前置 Boss', () => {
-    const save = { ...defaultSave(), secretKey: REAL_KEY }
-    const merged = withSecretRegion(py, fakeRegion('6', '6-1'))
-    const idx = merged.regions.findIndex((r) => r.id === '6')
-    expect(isRegionUnlocked(save, merged, idx)).toBe(true)
+    const merged = withSecretRegions(secretIsle, {
+      'python-basics': fakeRegion('6', '6-1'),
+    })
+    expect(isRegionUnlocked(save, merged, 0)).toBe(true)
+    expect(isRegionUnlocked({ ...defaultSave() }, merged, 0)).toBe(false)
   })
 
   it('无效密钥：秘境岛保持锁定', () => {

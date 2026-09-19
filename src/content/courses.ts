@@ -1,6 +1,9 @@
 import type { CourseDef, RegionDef } from './course'
 import { pythonBasics } from './python-basics'
 import { javascriptBasics } from './javascript-basics'
+import { cBasics } from './c-basics'
+import { cppBasics } from './cpp-basics'
+import { secretIsle } from './secret-isle'
 
 /**
  * 课程注册表：左侧菜单"课程"区块按此渲染。
@@ -10,7 +13,13 @@ import { javascriptBasics } from './javascript-basics'
  * questionKey 都以 regionId 为键，冲突会互相污染进度）。
  * tests/courses.test.ts 会守护这一点。
  */
-export const COURSES: readonly CourseDef[] = [pythonBasics, javascriptBasics]
+export const COURSES: readonly CourseDef[] = [
+  pythonBasics,
+  javascriptBasics,
+  cBasics,
+  cppBasics,
+  secretIsle,
+]
 
 /** 默认课程 id（老玩家没选过课时落到它上面） */
 export const DEFAULT_COURSE_ID = pythonBasics.id
@@ -34,6 +43,28 @@ export function withSecretRegion(course: CourseDef, secret?: RegionDef | null): 
     return { ...course, regions: course.regions.map((r) => (r.id === secret.id ? secret : r)) }
   }
   return { ...course, regions: [...course.regions, secret] }
+}
+
+/**
+ * 独立课程「秘境岛」专用：把服务端下发的全部秘境岛区域并入该课程。
+ * - secretLevels 为空 → 原样返回（未解锁 / 未下发）
+ * - 只并入 levels 非空、且课程里还没有同 id 的区域（幂等，可反复调用）
+ * Worker 现有 payload 的键（'6'、'j5'，未来 c5/cpp5）无需改动即被聚合。
+ */
+export function withSecretRegions(
+  course: CourseDef,
+  secretLevels?: Record<string, RegionDef> | null,
+): CourseDef {
+  if (!secretLevels) return course
+  const extra = Object.values(secretLevels).filter(
+    (r) =>
+      r &&
+      Array.isArray(r.levels) &&
+      r.levels.length > 0 &&
+      !course.regions.some((x) => x.id === r.id),
+  )
+  if (extra.length === 0) return course
+  return { ...course, regions: [...course.regions, ...extra] }
 }
 
 /** 课程通关进度（已通关关卡 / 可玩关卡总数），用于菜单里的进度条 */
