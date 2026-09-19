@@ -171,12 +171,12 @@ export function DonateModal({ open, onClose, secretKey, onRedeem }: Props) {
             <span>🗝 已有专属密钥？</span>
           </div>
           <p className="donate-key__note">
-            打赏后向作者索取专属密钥，在此兑换即可解锁隐藏学习项目
-            <strong>「秘境岛」</strong>——与四门语言课程平级的独立岛屿。
+            打赏后向作者索取专属密钥，即可预留<strong>「秘境岛」</strong>席位
+            ——它正在改造为证书刷题站（打赏专属题库），上线后凭密钥直接进入。
           </p>
           {keyState === 'ok' && (
             <p className="donate-key__msg donate-key__msg--ok" role="status">
-              ✨ 解锁成功！到左侧课程菜单切换到「秘境岛」看看。
+              ✨ 解锁成功！证书刷题站上线后，你的密钥就是入场券。
             </p>
           )}
           {keyState === 'err' && (

@@ -307,12 +307,20 @@ export default function App() {
             {secretLocked ? (
               <PixelPanel title="秘境岛 · 需要专属密钥">
                 <p className="secret-gate__text">
-                  秘境岛是打赏专属的独立学习项目：凭在册密钥解锁后，服务端会把隐藏关卡
-                  下发到这里，与四门语言课程平级推进。打赏后向作者索取密钥即可入场。
+                  秘境岛正在改造为「证书刷题站」——面向编程证书考试的打赏专属题库，
+                  筹备中。已打赏的玩家凭原密钥届时可直接进入；新玩家可先打赏预留席位。
                 </p>
                 <div className="row row--center">
                   <PixelButton onClick={() => setShowDonate(true)}>输入专属密钥</PixelButton>
                 </div>
+              </PixelPanel>
+            ) : activeCourse.id === 'secret-isle' && activeCourse.regions.length === 0 ? (
+              <PixelPanel title="秘境岛 · 证书刷题站筹备中">
+                <p className="secret-gate__text">
+                  秘境岛正在升级为「证书刷题站」：面向编程证书考试的专项题库，打赏专属。
+                  原来的毕业加试题已迁回各语言课程（免费畅玩）；刷题题库上线后，
+                  已解锁的冒险者将第一时间获得访问权——你的密钥就是入场券。
+                </p>
               </PixelPanel>
             ) : (
               <WorldMap

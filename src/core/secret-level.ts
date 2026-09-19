@@ -28,11 +28,13 @@ export type SecretFetchResult =
   | { status: 'bad-key' }
   | { status: 'network' }
 
-/** 轻量结构校验：至少要像一份 { courseId: RegionDef }，防服务端异常数据炸 UI */
+/**
+ * 轻量结构校验：至少要像一份 { courseId: RegionDef }，防服务端异常数据炸 UI。
+ * 空对象合法——秘境岛内容迁出 / 证书刷题站筹备期，服务端返回 {} 表示"暂无下发内容"。
+ */
 export function validateLevelsPayload(data: unknown): SecretLevels | null {
   if (typeof data !== 'object' || data === null) return null
   const out: SecretLevels = {}
-  let count = 0
   for (const [courseId, region] of Object.entries(data as Record<string, unknown>)) {
     if (typeof courseId !== 'string' || courseId.length === 0) return null
     if (typeof region !== 'object' || region === null) return null
@@ -45,9 +47,8 @@ export function validateLevelsPayload(data: unknown): SecretLevels | null {
       if (typeof l.id !== 'string' || !Array.isArray(l.questions)) return null
     }
     out[courseId] = region as unknown as RegionDef
-    count += 1
   }
-  return count > 0 ? out : null
+  return out
 }
 
 /**

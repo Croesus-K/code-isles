@@ -76,6 +76,31 @@ const j1a: LevelDef = {
       hint: '模板字符串会把 {} 里的变量替换成值。',
       explain: 'name 是 const 不会变（"冒险者"），hp 是 let 允许更新（从 100 减到 70）。模板字符串 ${} 把变量嵌进字符串，得「冒险者 HP: 70/100」。这是写公告牌、日志的标准写法。',
     },
+    {
+      kind: 'choice',
+      prompt: 'let hp = 100 之后写 hp = "满血"，会发生什么？',
+      options: ['报错：类型不能变', 'hp 变成字符串 "满血"，完全合法', 'hp 保持数字 100', '自动转成数字'],
+      answerIndex: 1,
+      hint: 'JS 是动态类型语言。',
+      explain: 'JS 变量没有固定类型：let 声明的 hp 先装数字、后装字符串完全合法。灵活归灵活，用变量前要想清楚它现在装的是什么类型。',
+    },
+    {
+      kind: 'output',
+      prompt: '运行这段代码会输出什么？',
+      code: 'let x = 2\nx = x * 3\nconsole.log(x)',
+      options: ['输出 2', '输出 6', '输出 23', '报错'],
+      answerIndex: 1,
+      hint: '先乘，再存回去。',
+      explain: 'x = x * 3：取 x 当时的 2，乘 3 得 6，再存回 x。变量的"更新"套路在 JS 和 Python 里一模一样。',
+    },
+    {
+      kind: 'choice',
+      prompt: '直接写 x = 1（不写 let 或 const）会怎样？',
+      options: ['直接报错', '悄悄创建全局变量——能跑，但是大坑', 'x 会变成常量', '什么都不会发生，也没有任何影响'],
+      answerIndex: 1,
+      hint: '不报错，但问题更隐蔽。',
+      explain: 'JS 对没声明的赋值很宽容：悄悄创建一个全局变量，程序能跑，但变量泄漏到全局作用域，项目一大极易出诡异 bug。永远写 let 或 const。',
+    },
   ],
 }
 
@@ -137,6 +162,32 @@ const j1b: LevelDef = {
       hint: '字符串 + 数字 → 字符串拼接。',
       explain: '+ 号遇上字符串就变成拼接：1 + "5" 得字符串 "15"，不是数字 6。这是 JS 著名的"加号陷阱"，做表单输入转换时特别容易中招。',
     },
+    {
+      kind: 'output',
+      prompt: '运行这段代码会输出什么？',
+      code: 'console.log(2 ** 3, 2 * 3)',
+      options: ['8 6', '6 8', '8 8', '16 6'],
+      answerIndex: 0,
+      hint: '一个是乘方，一个是乘法。',
+      explain: 'console.log 打印多个值用空格分隔：2**3 = 8（乘方），2*3 = 6（乘法）。** 和 * 只差一个星号，和 Python 一样要分清。',
+    },
+    {
+      kind: 'output',
+      prompt: '运行这段代码会输出什么？',
+      code: "console.log('3' * 2)",
+      options: ['6', '"33"', '"3 3"', '报错'],
+      answerIndex: 0,
+      hint: '减、乘、除会把字符串强制转成数字。',
+      explain: "'3' * 2 得 6：乘法把字符串 '3' 强制转成数字再算。但 + 不转——'3' + 2 得 '32'（拼接）。+ 是 JS 里唯一偏爱字符串的运算符，其余运算符都会把字符串掰回数字。",
+    },
+    {
+      kind: 'choice',
+      prompt: '哪个表达式的结果是 3.5？',
+      options: ['7 // 2', '7 % 2', '7 / 2', 'Math.floor(7 / 2)'],
+      answerIndex: 2,
+      hint: 'JS 只有一种除法。',
+      explain: 'JS 的 / 永远是真除法：7 / 2 = 3.5。JS 没有整除运算符（7 // 2 直接是语法错误），要整除得写 Math.floor(7 / 2) 得 3——这是和 Python 差异最大的一点。',
+    },
   ],
 }
 
@@ -149,7 +200,7 @@ const j1Boss: LevelDef = {
   learn: {
     title: 'Boss：变量、模板字符串与运算综合',
     body: [
-      '这一关没有新知识。5 道题覆盖 let/const、模板字符串、数字运算 —— 把你前 2 关的东西串起来用。',
+      '这一关没有新知识。7 道题覆盖 let/const、模板字符串、数字运算 —— 把你前 2 关的东西串起来用。',
       '答错会当场给解析，放心冲。全对零提示才能拿到 ★★★ 和完整战利品。',
     ],
   },
@@ -202,6 +253,24 @@ const j1Boss: LevelDef = {
       answerIndex: 2,
       hint: '** 是乘方。',
       explain: '2 ** 10 = 1024（2 的 10 次方）。这是 JS 里算次方的标准写法，写成 2^10 是按位异或，得 8——完全不是一回事。',
+    },
+    {
+      kind: 'output',
+      prompt: '运行这段代码会输出什么？',
+      code: 'console.log(10 % 3, 10 / 5)',
+      options: ['1 2', '3 2', '1 2.0', '报错'],
+      answerIndex: 0,
+      hint: '一边取余，一边真除。',
+      explain: '10 % 3 = 1（余数），10 / 5 = 2（JS 的除法打印时不带 .0）。% 和 / 是搭档：商 × 除数 + 余数 = 被除数。',
+    },
+    {
+      kind: 'fill',
+      prompt: '补全转换函数，让金币能做数字加法：',
+      code: 'let gold = "50"\ngold = ___(gold)\nconsole.log(gold + 1)   // 想输出 51',
+      answers: ['Number'],
+      placeholder: '六个字母，N 开头',
+      hint: '把字符串转成数字的内建函数。',
+      explain: 'Number("50") 把字符串转成数字 50，之后 gold + 1 是数字加法得 51。不转的话 "50" + 1 得 "501"（拼接）——动态类型里的关键守门员。',
     },
   ],
 }
@@ -1046,6 +1115,98 @@ const j4d: LevelDef = {
   ],
 }
 
+// ============ j4-5 进阶挑战：老坑新游（原秘境岛内容迁入） ============
+
+const j4e: LevelDef = {
+  id: 'j4-5',
+  name: '老坑新游（进阶挑战）',
+  xp: 55,
+  gold: 22,
+  learn: {
+    title: '老坑新游：运行时才现形的坑',
+    body: [
+      '进阶挑战：8 道题全是"看起来随便写也能跑，但结果出乎意料"的真实角落——JS 的坑都藏在运行时。',
+      '新面孔速览：NaN 连自己都不等（NaN === NaN 是 false），判断要用 Number.isNaN；var 是函数作用域，循环结束后还活着——永远用 let/const；sort() 不传比较函数时按字符串字典序排，数字排序要写 (a, b) => a - b。',
+      '另外两个：const 冻结的是"变量与值的绑定"不是内容（arr.push 合法、arr = [] 报错）；?? 只认 null 和 undefined，0 是合法值（|| 会把 0 当"没填"）。',
+      '心法：不要猜"JS 会帮我转类型"，要问"规范就是这么写的"。每道题都能用 node 实测复现。',
+    ],
+    code: '// 这几道题的考点在课程主线之外半步：\n// NaN、var 作用域、sort 字典序、const 绑定、?? 与 || 的分界。\n// 先读学习卡，再逐题击破。',
+  },
+  questions: [
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: 'const a = 5\nconsole.log(`value: ${a * 2}`)',
+      options: ['value: 10', 'value: ${a * 2}', 'value: a * 2', '报错'],
+      answerIndex: 0,
+      hint: '模板字符串的 ${} 里可以放任意表达式。',
+      explain: '模板字符串的 ${} 里放的是表达式，求值后把结果嵌进字符串：a * 2 = 10，得 "value: 10"。这比字符串拼接 "value: " + a * 2 更可读，是 JS 写动态文本的标准方式。',
+    },
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: 'console.log(NaN === NaN)',
+      options: ['true', 'false', '报错', 'NaN'],
+      answerIndex: 1,
+      hint: 'NaN 有个独一无二的脾气。',
+      explain: 'NaN 是全 JS 唯一"不等于自己"的值：NaN === NaN 是 false。所以不能用 === 判断一个值是不是 NaN，要用 Number.isNaN(x)。这是 IEEE-754 浮点规范的规定，不是 JS 的 bug——但只有 JS 让它天天撞到你面前。',
+    },
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: 'for (var i = 0; i < 3; i++) {}\nconsole.log(i)',
+      options: ['2', '3', 'undefined', '报错'],
+      answerIndex: 1,
+      hint: 'var 是函数作用域，出了循环还活着。',
+      explain: 'var 声明的变量是函数作用域：循环结束后 i 依然存在，值为让条件第一次失败的 3。换成 let 的话，i 是块作用域，循环外访问直接 ReferenceError。这就是"永远用 let/const"最有力的理由之一。',
+    },
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: 'console.log([1, 2, 10, 20].sort())',
+      options: ['[1, 2, 10, 20]', '[1, 10, 2, 20]', '[1, 2, 20, 10]', '报错'],
+      answerIndex: 1,
+      hint: 'sort 默认按什么顺序排？',
+      explain: 'sort() 不传比较函数时，把元素转成字符串按字典序排："10" < "2"（逐字符比，"1" < "2"），所以 [1, 10, 2, 20]。数字排序必须写 sort((a, b) => a - b)。这是 JS 数组最著名的坑之一。',
+    },
+    {
+      kind: 'bug',
+      prompt: '下面哪一行会报错？（注意 arr.push 是成功的）',
+      code: ['const arr = [1, 2]', 'arr.push(3)', 'arr = []'],
+      answerLine: 2,
+      hint: 'const 冻结的到底是什么？',
+      explain: '第 3 行：const 冻结的是"变量与值的绑定"，不是值本身——arr.push(3) 修改数组内容完全合法，但 arr = [] 想让 arr 指向新数组，就动了绑定，抛 TypeError: Assignment to constant variable。想整个数组都不可变要用 Object.freeze（浅冻结）。',
+    },
+    {
+      kind: 'fill',
+      prompt: '补全函数名，把字符串 "42" 转成数字 42：',
+      code: 'const n = ___("42")\nconsole.log(n + 1)   // → 43',
+      answers: ['Number'],
+      placeholder: '六个字母',
+      hint: '是全局的转换函数，也是类型名。',
+      explain: 'Number("42") 把字符串转成数字 42，n + 1 得 43（数字加法）。不用转换的话 "42" + 1 是字符串拼接 "421"——+ 号遇上字符串永远优先拼接。表单输入拿到的都是字符串，先 Number() 再做算术是标准姿势。',
+    },
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: "console.log(1 + 2 + '3')",
+      options: ['"33"', '"123"', '6', '报错'],
+      answerIndex: 0,
+      hint: '+ 号从左到右依次求值。',
+      explain: '加法从左到右：先算 1 + 2 = 3（数字加法），再算 3 + "3" —— 数字遇上字符串变成拼接，得 "33"。注意 "3" + 1 + 2 就反过来得 "312"：第一个操作数决定走加法还是拼接。',
+    },
+    {
+      kind: 'output',
+      prompt: '执行后输出什么？',
+      code: "console.log(0 ?? 'default')",
+      options: ['0', "'default'", 'true', '报错'],
+      answerIndex: 0,
+      hint: '?? 只认 null 和 undefined，其他值都算"有值"。',
+      explain: '?? 是空值合并：只有左侧是 null 或 undefined 才取右侧。0 是合法值，直接返回 0。换成 || 的话 0 是 falsy，会返回 "default"——所以"给默认值"时 ?? 和 || 的区别在 0、""、false 上都会现形。需要区分"没填"和"填了 0"就用 ??。',
+    },
+  ],
+}
+
 const j4Boss: LevelDef = {
   id: 'j4-B',
   name: '毕业总测验',
@@ -1127,7 +1288,7 @@ const regionJ4: RegionDef = {
   id: 'j4',
   name: '对象、函数与异常',
   tagline: 'JS 入门通关',
-  levels: [j4a, j4b, j4c, j4d, j4Boss],
+  levels: [j4a, j4b, j4c, j4d, j4e, j4Boss],
 }
 
 export const javascriptBasics: CourseDef = {

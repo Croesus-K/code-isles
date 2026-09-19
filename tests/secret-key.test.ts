@@ -106,10 +106,10 @@ describe('validateLevelsPayload 响应结构校验', () => {
     expect(validateLevelsPayload(levels)).toEqual(levels)
   })
 
-  it('空对象 / 非对象 / 缺字段 / 空 levels / 坏问题数组全部拒绝', () => {
+  it('空对象合法（秘境岛改造期）；非对象 / 缺字段 / 空 levels / 坏问题数组拒绝', () => {
     expect(validateLevelsPayload(null)).toBeNull()
     expect(validateLevelsPayload('x')).toBeNull()
-    expect(validateLevelsPayload({})).toBeNull()
+    expect(validateLevelsPayload({})).toEqual({})
     expect(validateLevelsPayload({ 'p': { id: '', name: 'x', levels: [{}] } })).toBeNull()
     expect(validateLevelsPayload({ 'p': { id: '6', name: 'x', levels: [] } })).toBeNull()
     expect(
